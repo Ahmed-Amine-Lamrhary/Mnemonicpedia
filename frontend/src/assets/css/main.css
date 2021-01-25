@@ -1,6 +1,51 @@
+@import url("https://fonts.googleapis.com/css2?family=Roboto:wght@100;300;400;500;700&display=swap");
+
+* {
+  outline: none !important;
+}
+
+body {
+  font-family: "Roboto", sans-serif;
+}
+
+/************************************** Screens *************************************************/
+/* Login and Register */
+.form-nav a.active:before {
+  content: "";
+  bottom: -8px;
+  left: 4px;
+  width: 48px;
+  height: 3px;
+  background-color: #1a73e8;
+  position: absolute;
+}
+
+/************************************** Components *************************************************/
 .modal {
   display: block !important;
 }
 .dropdown-menu {
   display: block !important;
+}
+
+/* Input Texts */
+::-webkit-input-placeholder {
+  color: rgba(0, 0, 0, 0.27);
+}
+:-ms-input-placeholder {
+  color: rgba(0, 0, 0, 0.27);
+}
+::placeholder {
+  color: rgba(0, 0, 0, 0.27);
+}
+input:focus {
+  border-color: #1a73e8;
+  border-width: 2px;
+  box-shadow: none;
+}
+
+/* Search */
+.search-bar input[type="text"]:focus {
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+  background: white;
 }

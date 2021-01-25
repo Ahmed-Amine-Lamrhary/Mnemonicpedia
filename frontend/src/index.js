@@ -4,7 +4,7 @@ import reportWebVitals from "./reportWebVitals";
 import { BrowserRouter } from "react-router-dom";
 import App from "./App";
 import "bootstrap/dist/css/bootstrap.min.css";
-import "./assets/css/icons.css";
+import "remixicon/fonts/remixicon.css";
 import "./assets/css/main.css";
 
 ReactDOM.render(

@@ -6,10 +6,11 @@ import FormGroup from "../forms/GroupForm";
 import config from "../../utility/config";
 import { setToken, getToken } from "../../utility/auth";
 import MessageBox from "../other/MessageBox";
-import { Link, Route, Switch } from "react-router-dom";
-import Logo from "../other/Logo";
+import { NavLink, Route, Switch } from "react-router-dom";
+import Button from "../other/Button";
+import Navs from "../other/Navs";
 
-function Dashboard({ logout, history }) {
+function User({ logout, history }) {
   const { fullname, username, email } = getUser();
   const [isMessageBox, setIsMessageBox] = useState(false);
 
@@ -40,9 +41,14 @@ function Dashboard({ logout, history }) {
     logout(history, "Your account has been deleted successfully");
   };
 
+  const getPosts = () => (
+    <>
+      <h1>Posts of {getUser().fullname}</h1>
+    </>
+  );
+
   const updateForm = () => (
     <>
-      <h1>Hello {getUser().fullname}</h1>
       <Form onSubmit={updateUser}>
         <FormGroup
           type="text"
@@ -74,40 +80,37 @@ function Dashboard({ logout, history }) {
           value={password2}
           onChange={(e) => setPassword2(e.target.value)}
         />
-        <button className="btn btn-primary" type="submit">
-          Update
-        </button>
-        <button
+        <Button text="Update" type="submit" className="btn-primary" />
+        <Button
+          text="Delete Account"
+          className="ml-2 btn-danger"
           onClick={() => setIsMessageBox(true)}
-          className="btn ml-2 btn-danger"
-          type="button"
-        >
-          Delete Account
-        </button>
+        />
       </Form>
     </>
   );
 
-  const sidebar = () => (
-    <div className="list-group">
-      <Logo />
-      <Link to="/dashboard" className="list-group-item list-group-item-action">
-        <i className="tim-icons icon-chart-pie-36"></i> Dashboard
-      </Link>
-      <Link
-        to="/dashboard/profile"
-        className="list-group-item list-group-item-action"
-      >
-        <i className="tim-icons icon-chart-pie-36"></i> Profile
-      </Link>
-      <Link onClick={logout} className="list-group-item list-group-item-action">
-        <i className="tim-icons icon-chart-pie-36"></i> Logout
-      </Link>
-    </div>
+  const list = () => (
+    <Navs
+      navs={[
+        {
+          to: "/user/posts",
+          text: "Posts",
+        },
+        {
+          to: "/user/settings",
+          text: "Settings",
+        },
+        {
+          text: "Logout",
+          onClick: logout,
+        },
+      ]}
+    />
   );
 
   return (
-    <div className="container-fluid">
+    <div className="container">
       <MessageBox
         visible={isMessageBox}
         onClose={() => setIsMessageBox(false)}
@@ -126,19 +129,14 @@ function Dashboard({ logout, history }) {
         ]}
       />
 
-      <div className="row">
-        <div className="col-md-2">
-          <div className="sidebar">{sidebar()}</div>
-        </div>
+      <div className="user-list">{list()}</div>
 
-        <div className="col-md-10">
-          <Switch>
-            <Route path="/dashboard/profile" render={() => updateForm()} />
-          </Switch>
-        </div>
-      </div>
+      <Switch>
+        <Route path="/user/posts" render={() => getPosts()} />
+        <Route path="/user/settings" render={() => updateForm()} />
+      </Switch>
     </div>
   );
 }
 
-export default Dashboard;
+export default User;

@@ -1,6 +1,8 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { getToken } from "../../utility/auth";
+import Mnemonic from "../other/Mnemonic";
+import Search from "../other/Search";
 
 function Home(props) {
   const publicContent = () => {
@@ -28,11 +30,20 @@ function Home(props) {
   };
 
   return (
-    <div>
-      <h1>Hello to our website</h1>
-      {!getToken() ? publicContent() : privateContent()}
+    <div className="container">
+      <Search />
+      <Mnemonic
+        mnemonic={{
+          title: "Hello",
+          content: "Content",
+        }}
+      />
     </div>
   );
+  // <div>
+  //   <h1>Hello to our website</h1>
+  //   {!getToken() ? publicContent() : privateContent()}
+  // </div>
 }
 
 export default Home;

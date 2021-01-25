@@ -1,9 +1,11 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, NavLink } from "react-router-dom";
 import axios from "axios";
 import Form from "../forms/Form";
 import FormGroup from "../forms/GroupForm";
 import config from "../../utility/config";
+import Button from "../other/Button";
+import FormNavigation from "../forms/FormNavigation";
 
 function Register({ history, location }) {
   const [fullname, setFullname] = useState("");
@@ -37,7 +39,12 @@ function Register({ history, location }) {
 
   return (
     <div className="container">
-      <h1>Register</h1>
+      <FormNavigation
+        links={[
+          { to: "/register", text: "Register" },
+          { to: "/login", text: "Log in" },
+        ]}
+      />
 
       <Form onSubmit={handleRegister} location={location}>
         <FormGroup
@@ -70,13 +77,7 @@ function Register({ history, location }) {
           value={password2}
           onChange={(e) => setPassword2(e.target.value)}
         />
-        <button className="btn btn-primary" type="submit">
-          Register
-        </button>
-        <div className="mt-3">
-          <span>Already have an account?</span>
-          <Link to="/login">Login</Link>
-        </div>
+        <Button text="Register" type="submit" className="btn-primary" />
       </Form>
     </div>
   );

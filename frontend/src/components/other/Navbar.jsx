@@ -1,9 +1,9 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { getUser } from "../../utility/user";
+import Button from "./Button";
 import Dropdown from "./Dropdown";
 import Logo from "./Logo";
-import SearchBox from "./SearchBox";
 
 function Navbar(props) {
   const user = getUser();
@@ -11,39 +11,34 @@ function Navbar(props) {
   return (
     <>
       <nav className="navbar navbar-expand-lg navbar-absolute navbar-transparent">
-        <div className="container-fluid">
+        <div className="container">
           <div className="navbar-wrapper">
             <Logo />
           </div>
           <div className="collapse navbar-collapse" id="navigation">
             <ul className="navbar-nav ml-auto">
-              <SearchBox
-                content={() => (
-                  <li className="search-bar input-group">
-                    <button className="btn btn-link">
-                      <i className="tim-icons icon-zoom-split"></i>
-                      <span className="d-lg-none d-md-block">Search</span>
-                    </button>
-                  </li>
-                )}
-              />
+              <li className="input-group">
+                <Button text="Submit" to="/submit" className="btn-primary" />
+              </li>
 
               {!user && (
                 <>
-                  <li className="input-group">
-                    <Link to="/login" className="btn btn-sm btn-primary">
-                      Login
-                    </Link>
+                  <li className="input-group ml-2">
+                    <Button text="Login" to="/login" className="btn-primary" />
                   </li>
-                  <li className="input-group">
-                    <Link to="/register" className="btn btn-sm btn-success">
-                      Register
-                    </Link>
+                  <li className="input-group ml-2">
+                    <Button
+                      text="Register"
+                      to="/register"
+                      className="btn-primary"
+                    />
                   </li>
                 </>
               )}
 
-              {user && (
+              {user && <Link to="/user">user</Link>}
+
+              {/* {user && (
                 <Dropdown
                   content={() => (
                     <>
@@ -64,7 +59,7 @@ function Navbar(props) {
                     },
                   ]}
                 />
-              )}
+              )} */}
             </ul>
           </div>
         </div>

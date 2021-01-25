@@ -1,10 +1,13 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 import axios from "axios";
 import Form from "../forms/Form";
 import FormGroup from "../forms/GroupForm";
 import { login } from "../../utility/auth";
 import config from "../../utility/config";
+import FormCheck from "../forms/FormCheck";
+import Button from "../other/Button";
+import FormNavigation from "../forms/FormNavigation";
 
 function Login({ history, location }) {
   const [email, setEmail] = useState("");
@@ -19,12 +22,17 @@ function Login({ history, location }) {
     });
 
     // save user's token and redirect to dashboard
-    login(token, history, "/dashboard");
+    login(token, history, "/user");
   };
 
   return (
     <div className="container">
-      <h1>Login</h1>
+      <FormNavigation
+        links={[
+          { to: "/register", text: "Register" },
+          { to: "/login", text: "Log in" },
+        ]}
+      />
 
       <Form onSubmit={handleLogin} location={location}>
         <FormGroup
@@ -40,26 +48,14 @@ function Login({ history, location }) {
           onChange={(e) => setPassword(e.target.value)}
         />
 
-        <div className="form-check mb-4">
-          <input
-            type="checkbox"
-            checked={keepLogin}
-            onChange={() => setKeepLogin(!keepLogin)}
-            className="form-check-input"
-            id="keepLogin"
-          />
-          <label className="form-check-label" htmlFor="keepLogin">
-            Keep me logged in
-          </label>
-        </div>
+        <FormCheck
+          label="Keep me logged in"
+          id="keepLogin"
+          checked={keepLogin}
+          onChange={() => setKeepLogin(!keepLogin)}
+        />
 
-        <button className="btn btn-primary" type="submit">
-          Login
-        </button>
-        <div className="mt-3">
-          <span>Don't have an account?</span>
-          <Link to="/register">Register</Link>
-        </div>
+        <Button text="Login" type="submit" className="btn-primary" />
       </Form>
     </div>
   );
