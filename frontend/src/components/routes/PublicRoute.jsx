@@ -1,0 +1,17 @@
+import React from "react";
+import { Redirect, Route } from "react-router-dom";
+import { getToken } from "../../utility/auth";
+
+function PublicRoute({ component: Component, ...rest }) {
+  return (
+    <Route
+      {...rest}
+      render={(props) => {
+        if (getToken()) return <Redirect to="/dashboard" />;
+        return <Component {...props} />;
+      }}
+    />
+  );
+}
+
+export default PublicRoute;
