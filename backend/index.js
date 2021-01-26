@@ -11,6 +11,10 @@ const auth = require("./routes/auth");
 app.use("/auth", auth);
 const user = require("./routes/user");
 app.use("/user", user);
+const mnemonic = require("./routes/mnemonic");
+app.use("/mnemonic", mnemonic);
+const category = require("./routes/category");
+app.use("/category", category);
 
 mongoose
   .connect("mongodb://localhost/ourapp")

@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import { NavLink } from "react-router-dom";
 import axios from "axios";
 import Form from "../forms/Form";
 import FormGroup from "../forms/GroupForm";
@@ -55,7 +54,7 @@ function Login({ history, location }) {
           onChange={() => setKeepLogin(!keepLogin)}
         />
 
-        <Button text="Login" type="submit" className="btn-primary" />
+        <Button type="submit">Login</Button>
       </Form>
     </div>
   );

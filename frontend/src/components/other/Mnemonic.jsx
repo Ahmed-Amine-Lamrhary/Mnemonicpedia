@@ -1,19 +1,29 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import colors from "../../utility/colors";
+import { getUser } from "../../utility/user";
+import Button from "./Button";
 
-function Mnemonic({ mnemonic: { title, content } }) {
+function Mnemonic({ mnemonic: { _id, title, content, author }, onDelete }) {
+  if (!_id) return null;
+  const user = getUser();
+
   return (
     <div style={style.container} className="mnemonic">
-      <Link
-        style={style.report}
-        to="/report-mnemonic-148745"
-        className="report"
-      >
-        <i className="ri-flag-2-line"></i>
-      </Link>
+      {user ? (
+        user._id !== author ? (
+          <Link
+            style={style.report}
+            to={`/report-mnemonic-${_id}`}
+            className="report"
+          >
+            <i className="ri-flag-2-line"></i>
+          </Link>
+        ) : null
+      ) : null}
 
       <h4 style={style.title}>
-        <Link style={style.titleLink} to="/">
+        <Link style={style.titleLink} to={`/mnemonic-${_id}`}>
           {title}
         </Link>
       </h4>
@@ -30,6 +40,14 @@ function Mnemonic({ mnemonic: { title, content } }) {
           <i style={style.btnIcon} className="ri-share-forward-line"></i> Share
         </button>
       </div>
+
+      {user ? (
+        user._id === author ? (
+          <Button onClick={() => onDelete(_id)}>Delete</Button>
+        ) : null
+      ) : null}
+
+      <Link to={`/user-${author}`}>Author</Link>
     </div>
   );
 }
@@ -47,7 +65,7 @@ const style = {
     fontSize: "18px",
     lineHeight: "23px",
     display: "inline-block",
-    color: "#1a73e8",
+    color: colors.primary,
   },
   titleLink: {
     textDecoration: "none",

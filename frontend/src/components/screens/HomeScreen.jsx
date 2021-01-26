@@ -1,49 +1,57 @@
-import React from "react";
-import { Link } from "react-router-dom";
-import { getToken } from "../../utility/auth";
+import React, { useEffect, useState } from "react";
 import Mnemonic from "../other/Mnemonic";
 import Search from "../other/Search";
+import axios from "axios";
+import config from "../../utility/config";
+import Nothing from "../other/Nothing";
+import { getToken } from "../../utility/auth";
 
 function Home(props) {
-  const publicContent = () => {
-    return (
-      <>
-        <p>Please login or register</p>
-        <Link to="/login" className="btn btn-primary">
-          Login
-        </Link>
-        <Link to="/register" className="btn btn-primary">
-          Register
-        </Link>
-      </>
-    );
+  const [mnemonics, setMnemonics] = useState([]);
+
+  axios.defaults.headers.common["x-auth-token"] = getToken();
+
+  const deleteMnemonic = async (_id) => {
+    try {
+      await axios.delete(`${config.api}/mnemonic`, {
+        data: {
+          _id,
+        },
+      });
+      let newMnemonics = [...mnemonics];
+      newMnemonics = newMnemonics.filter((mnemonic) => mnemonic._id !== _id);
+      setMnemonics(newMnemonics);
+    } catch (error) {
+      console.log(error.response.data.error);
+    }
   };
 
-  const privateContent = () => {
-    return (
-      <>
-        <Link to="/dashboard" className="btn btn-primary">
-          Go to dashboard
-        </Link>
-      </>
-    );
+  const getMnemonics = async () => {
+    try {
+      const { data: mnemonics } = await axios.get(`${config.api}/mnemonic`);
+      setMnemonics(mnemonics);
+    } catch (error) {
+      console.error(error);
+    }
   };
+
+  useEffect(() => {
+    getMnemonics();
+  }, []);
 
   return (
     <div className="container">
       <Search />
-      <Mnemonic
-        mnemonic={{
-          title: "Hello",
-          content: "Content",
-        }}
-      />
+
+      {mnemonics.length > 0 ? (
+        mnemonics.map((mnemonic, index) => (
+          <Mnemonic key={index} mnemonic={mnemonic} onDelete={deleteMnemonic} />
+        ))
+      ) : (
+        <Nothing model="mnemonic" />
+      )}
     </div>
   );
-  // <div>
-  //   <h1>Hello to our website</h1>
-  //   {!getToken() ? publicContent() : privateContent()}
-  // </div>
 }
 
 export default Home;

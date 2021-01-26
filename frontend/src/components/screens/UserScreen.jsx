@@ -6,14 +6,13 @@ import FormGroup from "../forms/GroupForm";
 import config from "../../utility/config";
 import { setToken, getToken } from "../../utility/auth";
 import MessageBox from "../other/MessageBox";
-import { NavLink, Route, Switch } from "react-router-dom";
+import { Route, Switch } from "react-router-dom";
 import Button from "../other/Button";
 import Navs from "../other/Navs";
 
-function User({ logout, history }) {
-  const { fullname, username, email } = getUser();
+function User({ logout, history, match }) {
+  const { _id, fullname, username, email } = getUser();
   const [isMessageBox, setIsMessageBox] = useState(false);
-
   const [newFullname, setNewFullname] = useState(fullname);
   const [newUsername, setNewUsername] = useState(username);
   const [newEmail, setNewEmail] = useState(email);
@@ -40,12 +39,6 @@ function User({ logout, history }) {
     });
     logout(history, "Your account has been deleted successfully");
   };
-
-  const getPosts = () => (
-    <>
-      <h1>Posts of {getUser().fullname}</h1>
-    </>
-  );
 
   const updateForm = () => (
     <>
@@ -80,60 +73,87 @@ function User({ logout, history }) {
           value={password2}
           onChange={(e) => setPassword2(e.target.value)}
         />
-        <Button text="Update" type="submit" className="btn-primary" />
+        <Button type="submit">Update</Button>
         <Button
-          text="Delete Account"
-          className="ml-2 btn-danger"
+          className="ml-2"
+          bgColor="danger"
           onClick={() => setIsMessageBox(true)}
-        />
+        >
+          Delete Account
+        </Button>
       </Form>
     </>
   );
 
-  const list = () => (
-    <Navs
-      navs={[
+  const getPosts = () => (
+    <>
+      <h1>Posts</h1>
+    </>
+  );
+
+  const reportUser = () => {};
+
+  const navs = () => {
+    if (match.path === "/me")
+      return [
         {
-          to: "/user/posts",
+          to: "/me/posts",
           text: "Posts",
         },
         {
-          to: "/user/settings",
+          to: "/me/settings",
           text: "Settings",
+        },
+        {
+          to: `/user-${_id}`,
+          text: "View as visitor",
         },
         {
           text: "Logout",
           onClick: logout,
         },
-      ]}
-    />
-  );
+      ];
+
+    return [
+      {
+        to: `${match.url}/posts`,
+        text: "Posts",
+      },
+      {
+        text: "Report User",
+        onClick: reportUser,
+      },
+    ];
+  };
 
   return (
     <div className="container">
-      <MessageBox
-        visible={isMessageBox}
-        onClose={() => setIsMessageBox(false)}
-        title="Are you sure you want to delete your account?"
-        buttons={[
-          {
-            text: "Keep My Account",
-            colorClass: "primary",
-            onClick: () => setIsMessageBox(false),
-          },
-          {
-            text: "Delete My Account",
-            colorClass: "danger",
-            onClick: () => deleteUser(),
-          },
-        ]}
-      />
+      {match.path === "/me" && (
+        <MessageBox
+          visible={isMessageBox}
+          onClose={() => setIsMessageBox(false)}
+          title="Are you sure you want to delete your account?"
+          buttons={[
+            {
+              text: "Keep My Account",
+              bgColor: "primary",
+              onClick: () => setIsMessageBox(false),
+            },
+            {
+              text: "Delete My Account",
+              bgColor: "danger",
+              onClick: () => deleteUser(),
+            },
+          ]}
+        />
+      )}
 
-      <div className="user-list">{list()}</div>
+      <Navs navs={navs()} />
 
       <Switch>
-        <Route path="/user/posts" render={() => getPosts()} />
-        <Route path="/user/settings" render={() => updateForm()} />
+        <Route path="/me/posts" render={() => getPosts()} />
+        <Route path="/user-:id/posts" render={() => getPosts()} />
+        <Route path="/me/settings" render={() => updateForm()} />
       </Switch>
     </div>
   );

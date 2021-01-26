@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import { Link, NavLink } from "react-router-dom";
 import axios from "axios";
 import Form from "../forms/Form";
 import FormGroup from "../forms/GroupForm";
@@ -77,7 +76,7 @@ function Register({ history, location }) {
           value={password2}
           onChange={(e) => setPassword2(e.target.value)}
         />
-        <Button text="Register" type="submit" className="btn-primary" />
+        <Button type="submit">Register</Button>
       </Form>
     </div>
   );

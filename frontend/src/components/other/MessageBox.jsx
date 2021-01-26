@@ -1,4 +1,5 @@
 import React from "react";
+import Button from "./Button";
 
 function MessageBox({ visible, onClose, title, body, buttons }) {
   if (!visible) return null;
@@ -9,9 +10,9 @@ function MessageBox({ visible, onClose, title, body, buttons }) {
           <div className="modal-header">
             {title && <h5 className="modal-title">{title}</h5>}
             {onClose && (
-              <button type="button" className="close" onClick={onClose}>
+              <Button className="close" onClick={onClose}>
                 <span aria-hidden="true">&times;</span>
-              </button>
+              </Button>
             )}
           </div>
           {body && (
@@ -22,14 +23,13 @@ function MessageBox({ visible, onClose, title, body, buttons }) {
           {buttons && (
             <div className="modal-footer">
               {buttons.map((button, index) => (
-                <button
+                <Button
                   key={index}
-                  type="button"
-                  className={`btn btn-${button.colorClass}`}
                   onClick={button.onClick}
+                  bgColor={button.bgColor}
                 >
                   {button.text}
-                </button>
+                </Button>
               ))}
             </div>
           )}

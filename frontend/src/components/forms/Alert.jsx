@@ -5,9 +5,6 @@ function Alert({ type, message }) {
   return (
     <div className={`alert alert-${type} alert-dismissible show`}>
       {message}
-      {/* <button className="close" type="button">
-        <span aria-hidden="true">&times;</span>
-      </button> */}
     </div>
   );
 }

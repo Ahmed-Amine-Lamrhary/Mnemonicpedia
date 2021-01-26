@@ -27,7 +27,8 @@ function App({ history }) {
           <Route path="/mnemonic-:id" component={MnemonicScreen} />
           <PublicRoute path="/login" component={Login} />
           <PublicRoute path="/register" component={Register} />
-          <PrivateRoute path="/user" component={User} />
+          <PrivateRoute path="/me" component={User} />
+          <Route path="/user-:id" component={User} />
           <PrivateRoute path="/submit" component={Submit} />
           <PrivateRoute path="/report-user-:id" component={ReportUser} />
           <PrivateRoute

@@ -66,7 +66,7 @@ router.put("/", auth, async (req, res) => {
     if (!fullname && !username && !email && !password)
       return res.status(304).send();
 
-    const user = await User.findOne({ email: req.user.email });
+    const user = await User.findById(req.user._id);
     if (fullname) user.fullname = fullname;
     if (username) user.username = username;
     if (email) user.email = email;
@@ -81,13 +81,13 @@ router.put("/", auth, async (req, res) => {
 });
 
 router.delete("/", auth, async (req, res) => {
-  const { email } = req.user;
+  const { _id } = req.user;
 
   try {
-    await User.deleteOne({ email });
+    await User.deleteOne({ _id });
     res.json({
       user: {
-        email,
+        _id,
       },
     });
   } catch (error) {

@@ -1,5 +1,5 @@
 import React from "react";
-import { NavLink } from "react-router-dom";
+import Button from "./Button";
 
 function Navs({ navs }) {
   return (
@@ -7,13 +7,13 @@ function Navs({ navs }) {
       {navs.map((nav, index) => (
         <li key={index} className="nav-item">
           {!nav.onClick ? (
-            <NavLink to={nav.to} className="nav-link">
+            <Button to={nav.to} bgColor="white">
               {nav.text}
-            </NavLink>
+            </Button>
           ) : (
-            <a href="#" className="nav-link" onClick={nav.onClick}>
+            <Button onClick={nav.onClick} bgColor="white">
               {nav.text}
-            </a>
+            </Button>
           )}
         </li>
       ))}
