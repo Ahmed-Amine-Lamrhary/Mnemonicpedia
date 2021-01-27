@@ -7,6 +7,7 @@ function Button({
   type = "button",
   to,
   bgColor = "primary",
+  addStyle,
   ...rest
 }) {
   const [theme, setTheme] = useState({});
@@ -28,6 +29,7 @@ function Button({
       <Link
         style={{
           ...style.button,
+          ...addStyle,
           backgroundColor: theme.bgColor,
           color: theme.color,
         }}
@@ -42,6 +44,7 @@ function Button({
     <button
       style={{
         ...style.button,
+        ...addStyle,
         backgroundColor: theme.bgColor,
         color: theme.color,
       }}

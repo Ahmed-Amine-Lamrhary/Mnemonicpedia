@@ -47,6 +47,28 @@ router.post("/", auth, async (req, res) => {
   }
 });
 
+router.put("/like", auth, async (req, res) => {
+  const { _id: userId } = req.user;
+  const {
+    data: { _id: mnemonicId },
+  } = req.body;
+
+  try {
+    let mnemonic = await Mnemonic.findById(mnemonicId);
+
+    if (!mnemonic.likes.includes(userId)) mnemonic.likes.push(userId);
+    else mnemonic.likes = mnemonic.likes.filter((like) => like !== userId);
+
+    await mnemonic.save();
+    return res.json({
+      likes: mnemonic.likes,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
 router.delete("/", auth, async (req, res) => {
   const { _id } = req.body;
   if (!_id) return res.status(400).json({ error: "No id was given" });

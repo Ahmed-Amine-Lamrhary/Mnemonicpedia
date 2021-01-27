@@ -3,8 +3,10 @@ import { Link } from "react-router-dom";
 import colors from "../../utility/colors";
 import { getUser } from "../../utility/user";
 import Button from "./Button";
+import generateUrl from "generate-url";
 
-function Mnemonic({ mnemonic: { _id, title, content, author }, onDelete }) {
+function Mnemonic({ mnemonic, onDelete, onLike }) {
+  const { _id, title, content, author, likes } = mnemonic;
   if (!_id) return null;
   const user = getUser();
 
@@ -14,7 +16,7 @@ function Mnemonic({ mnemonic: { _id, title, content, author }, onDelete }) {
         user._id !== author ? (
           <Link
             style={style.report}
-            to={`/report-mnemonic-${_id}`}
+            to={`/report-mnemonic/${_id}`}
             className="report"
           >
             <i className="ri-flag-2-line"></i>
@@ -23,7 +25,7 @@ function Mnemonic({ mnemonic: { _id, title, content, author }, onDelete }) {
       ) : null}
 
       <h4 style={style.title}>
-        <Link style={style.titleLink} to={`/mnemonic-${_id}`}>
+        <Link style={style.titleLink} to={`/${generateUrl(title)}-${_id}`}>
           {title}
         </Link>
       </h4>
@@ -32,13 +34,17 @@ function Mnemonic({ mnemonic: { _id, title, content, author }, onDelete }) {
 
       <div style={style.helpful} className="helpful">
         Helpful?
-        <a style={style.btn} href="login" className="btn">
-          <i style={style.btnIcon} className="ri-thumb-up-line"></i>{" "}
-          <span>0</span>
-        </a>
-        <button style={style.btn} className="btn share">
+        <Button
+          bgColor={likes.includes(user._id) ? "primary" : "white"}
+          addStyle={style.btn}
+          onClick={() => onLike(mnemonic)}
+        >
+          <i style={style.btnIcon} className="ri-thumb-up-line"></i>
+          <span>{likes.length}</span>
+        </Button>
+        <Button bgColor="white" addStyle={style.btn}>
           <i style={style.btnIcon} className="ri-share-forward-line"></i> Share
-        </button>
+        </Button>
       </div>
 
       {user ? (
@@ -47,7 +53,7 @@ function Mnemonic({ mnemonic: { _id, title, content, author }, onDelete }) {
         ) : null
       ) : null}
 
-      <Link to={`/user-${author}`}>Author</Link>
+      <Link to={`/user/${author}`}>Author</Link>
     </div>
   );
 }
@@ -82,7 +88,6 @@ const style = {
     alignItems: "center",
   },
   btn: {
-    background: "transparent",
     border: "1px solid #f1f3f4",
     padding: "6px 12px",
     fontWeight: "400",

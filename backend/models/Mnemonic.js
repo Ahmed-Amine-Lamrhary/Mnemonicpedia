@@ -23,9 +23,9 @@ const schema = mongoose.Schema({
     type: Boolean,
     default: true,
   },
-  numberLikes: {
-    type: Number,
-    default: 0,
+  likes: {
+    type: Array,
+    default: [],
   },
   categories: {
     type: [mongoose.Schema.ObjectId],

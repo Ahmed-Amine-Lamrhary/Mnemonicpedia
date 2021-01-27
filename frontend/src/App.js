@@ -24,17 +24,17 @@ function App({ history }) {
       <Navbar />
       <div className="content">
         <Switch>
-          <Route path="/mnemonic-:id" component={MnemonicScreen} />
           <PublicRoute path="/login" component={Login} />
           <PublicRoute path="/register" component={Register} />
           <PrivateRoute path="/me" component={User} />
-          <Route path="/user-:id" component={User} />
+          <Route path="/user/:id" component={User} />
           <PrivateRoute path="/submit" component={Submit} />
-          <PrivateRoute path="/report-user-:id" component={ReportUser} />
+          <PrivateRoute path="/report-user/:id" component={ReportUser} />
           <PrivateRoute
-            path="/report-mnemonic-:id"
+            path="/report-mnemonic/:id"
             component={ReportMnemonic}
           />
+          <Route path="/:name-:id" component={MnemonicScreen} />
           <Route path="/notFound" component={NotFound} />
           <Route path="/" component={Home} exact />
           <Redirect to="/notFound" />

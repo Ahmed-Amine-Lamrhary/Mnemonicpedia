@@ -5,10 +5,11 @@ import axios from "axios";
 import config from "../../utility/config";
 import Nothing from "../other/Nothing";
 import { getToken } from "../../utility/auth";
+import { getUser } from "../../utility/user";
 
 function Home(props) {
   const [mnemonics, setMnemonics] = useState([]);
-
+  const user = getUser();
   axios.defaults.headers.common["x-auth-token"] = getToken();
 
   const deleteMnemonic = async (_id) => {
@@ -35,6 +36,31 @@ function Home(props) {
     }
   };
 
+  const likeMnemonic = async (mnemonic) => {
+    // UI
+    let newMnemonics = [...mnemonics];
+    let mnemonicLikes = newMnemonics.find((m) => m._id === mnemonic._id).likes;
+
+    if (!mnemonicLikes.includes(user._id)) mnemonicLikes.push(user._id);
+    else
+      newMnemonics.find(
+        (m) => m._id === mnemonic._id
+      ).likes = newMnemonics
+        .find((m) => m._id === mnemonic._id)
+        .likes.filter((l) => l !== user._id);
+
+    setMnemonics(newMnemonics);
+
+    try {
+      // change in db
+      await axios.put(`${config.api}/mnemonic/like`, {
+        data: { _id: mnemonic._id },
+      });
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   useEffect(() => {
     getMnemonics();
   }, []);
@@ -45,7 +71,12 @@ function Home(props) {
 
       {mnemonics.length > 0 ? (
         mnemonics.map((mnemonic, index) => (
-          <Mnemonic key={index} mnemonic={mnemonic} onDelete={deleteMnemonic} />
+          <Mnemonic
+            key={index}
+            mnemonic={mnemonic}
+            onDelete={deleteMnemonic}
+            onLike={likeMnemonic}
+          />
         ))
       ) : (
         <Nothing model="mnemonic" />

@@ -1,4 +1,5 @@
 import React from "react";
+import colors from "../../utility/colors";
 
 function FormCheck({ label, id, checked, onChange }) {
   return (
@@ -21,7 +22,7 @@ const style = {
   label: {
     fontSize: "13px",
     fontWeight: "500",
-    color: "#1a73e8",
+    color: colors.primary,
     cursor: "pointer",
   },
 };

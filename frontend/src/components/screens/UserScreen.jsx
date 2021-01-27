@@ -91,8 +91,6 @@ function User({ logout, history, match }) {
     </>
   );
 
-  const reportUser = () => {};
-
   const navs = () => {
     if (match.path === "/me")
       return [
@@ -105,7 +103,7 @@ function User({ logout, history, match }) {
           text: "Settings",
         },
         {
-          to: `/user-${_id}`,
+          to: `/user/${_id}`,
           text: "View as visitor",
         },
         {
@@ -120,8 +118,8 @@ function User({ logout, history, match }) {
         text: "Posts",
       },
       {
+        to: `/report-user/${_id}`,
         text: "Report User",
-        onClick: reportUser,
       },
     ];
   };
@@ -152,7 +150,7 @@ function User({ logout, history, match }) {
 
       <Switch>
         <Route path="/me/posts" render={() => getPosts()} />
-        <Route path="/user-:id/posts" render={() => getPosts()} />
+        <Route path="/user/:id/posts" render={() => getPosts()} />
         <Route path="/me/settings" render={() => updateForm()} />
       </Switch>
     </div>

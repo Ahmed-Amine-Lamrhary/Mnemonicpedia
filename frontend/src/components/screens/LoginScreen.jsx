@@ -21,7 +21,7 @@ function Login({ history, location }) {
     });
 
     // save user's token and redirect to dashboard
-    login(token, history, "/user");
+    login(token, history, "/me");
   };
 
   return (
