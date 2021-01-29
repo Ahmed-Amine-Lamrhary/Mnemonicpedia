@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { Switch, Route, Redirect, withRouter } from "react-router-dom";
-import { isStillAuthenticated } from "./utility/auth";
+import { isStillAuthenticated } from "./api/me";
 import User from "./components/screens/UserScreen";
 import Home from "./components/screens/HomeScreen";
 import Login from "./components/screens/LoginScreen";
@@ -13,8 +13,13 @@ import ReportMnemonic from "./components/screens/ReportMnemonic";
 import PrivateRoute from "./components/routes/PrivateRoute";
 import PublicRoute from "./components/routes/PublicRoute";
 import Navbar from "./components/other/Navbar";
+import axios from "axios";
+import { getToken } from "./api/me";
+import MeScreen from "./components/screens/MeScreen";
 
 function App({ history }) {
+  axios.defaults.headers.common["x-auth-token"] = getToken();
+
   useEffect(() => {
     isStillAuthenticated(history);
   });
@@ -26,7 +31,7 @@ function App({ history }) {
         <Switch>
           <PublicRoute path="/login" component={Login} />
           <PublicRoute path="/register" component={Register} />
-          <PrivateRoute path="/me" component={User} />
+          <PrivateRoute path="/me" component={MeScreen} />
           <Route path="/user/:id" component={User} />
           <PrivateRoute path="/submit" component={Submit} />
           <PrivateRoute path="/report-user/:id" component={ReportUser} />
@@ -34,7 +39,7 @@ function App({ history }) {
             path="/report-mnemonic/:id"
             component={ReportMnemonic}
           />
-          <Route path="/:name-:id" component={MnemonicScreen} />
+          <Route path="/:name/:id" component={MnemonicScreen} />
           <Route path="/notFound" component={NotFound} />
           <Route path="/" component={Home} exact />
           <Redirect to="/notFound" />

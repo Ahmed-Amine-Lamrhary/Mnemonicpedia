@@ -1,24 +1,17 @@
 import React, { useEffect, useState } from "react";
 import Mnemonic from "../other/Mnemonic";
 import Search from "../other/Search";
-import axios from "axios";
-import config from "../../utility/config";
 import Nothing from "../other/Nothing";
-import { getToken } from "../../utility/auth";
-import { getUser } from "../../utility/user";
+import { deleteMnemonic, getMnemonics, likeMnemonic } from "../../api/mnemonic";
+import { getMe } from "../../api/me";
 
 function Home(props) {
   const [mnemonics, setMnemonics] = useState([]);
-  const user = getUser();
-  axios.defaults.headers.common["x-auth-token"] = getToken();
+  const user = getMe();
 
-  const deleteMnemonic = async (_id) => {
+  const handleDelete = async (_id) => {
     try {
-      await axios.delete(`${config.api}/mnemonic`, {
-        data: {
-          _id,
-        },
-      });
+      await deleteMnemonic(_id);
       let newMnemonics = [...mnemonics];
       newMnemonics = newMnemonics.filter((mnemonic) => mnemonic._id !== _id);
       setMnemonics(newMnemonics);
@@ -27,16 +20,16 @@ function Home(props) {
     }
   };
 
-  const getMnemonics = async () => {
+  const handleGet = async () => {
     try {
-      const { data: mnemonics } = await axios.get(`${config.api}/mnemonic`);
+      const { data: mnemonics } = await getMnemonics();
       setMnemonics(mnemonics);
     } catch (error) {
       console.error(error);
     }
   };
 
-  const likeMnemonic = async (mnemonic) => {
+  const handleLike = async (mnemonic) => {
     // UI
     let newMnemonics = [...mnemonics];
     let mnemonicLikes = newMnemonics.find((m) => m._id === mnemonic._id).likes;
@@ -53,16 +46,14 @@ function Home(props) {
 
     try {
       // change in db
-      await axios.put(`${config.api}/mnemonic/like`, {
-        data: { _id: mnemonic._id },
-      });
+      await likeMnemonic(mnemonic);
     } catch (error) {
       console.error(error);
     }
   };
 
   useEffect(() => {
-    getMnemonics();
+    handleGet();
   }, []);
 
   return (
@@ -74,8 +65,8 @@ function Home(props) {
           <Mnemonic
             key={index}
             mnemonic={mnemonic}
-            onDelete={deleteMnemonic}
-            onLike={likeMnemonic}
+            onDelete={handleDelete}
+            onLike={handleLike}
           />
         ))
       ) : (

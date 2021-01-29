@@ -1,109 +1,25 @@
 const express = require("express");
 const router = express.Router();
 const User = require("../models/User");
-const bcrypt = require("bcrypt");
-const auth = require("../middlewares/auth");
-const Joi = require("joi");
-const { createToken } = require("../config/jwt");
+const ObjectId = require("mongoose").Types.ObjectId;
 
-const registerSchema = Joi.object({
-  fullname: Joi.string().min(3).max(10).required(),
-  username: Joi.string().min(3).max(10).required(),
-  email: Joi.string().email().required(),
-  password: Joi.string().pattern(new RegExp("^[a-zA-Z0-9]{3,30}$")).required(),
-  password2: Joi.ref("password"),
-});
+router.get("/:id", async (req, res) => {
+  const { id } = req.params;
 
-const updateSchema = Joi.object({
-  fullname: Joi.string().allow("").min(3).max(10),
-  username: Joi.string().allow("").min(3).max(10),
-  email: Joi.string().allow("").email(),
-  password: Joi.string().allow("").pattern(new RegExp("^[a-zA-Z0-9]{3,30}$")),
-  password2: Joi.ref("password"),
-});
+  // check if id is valid
+  if (!ObjectId.isValid(id))
+    return res.status(400).json({ error: "Id is not valid" });
 
-router.post("/", async (req, res) => {
-  const { fullname, username, email, password } = req.body;
-
-  const error = validateData(req.body, registerSchema);
-  if (error) return res.status(400).json({ error: error.details[0].message });
-
+  // check if user exists
   try {
-    // check if user already exists
-    const user = await User.findOne({
-      $or: [{ email }, { username }],
-    });
+    const user = await User.findById(id).select("-password");
+    if (!user) return res.status(404).json({ error: "User does not exist" });
 
-    if (user)
-      return res
-        .status(400)
-        .json({ error: "Username or email already exists" });
-
-    // register
-    const newUser = await new User({ fullname, username, email, password });
-    newUser.password = await encryptPassword(password);
-    await newUser.save();
-    res.json({
-      user: {
-        fullname,
-        email,
-        username,
-      },
-    });
+    res.json(user);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
-
-router.put("/", auth, async (req, res) => {
-  const { fullname, username, email, password } = req.body;
-
-  const error = validateData(req.body, updateSchema);
-  if (error) return res.status(400).json({ error: error.details[0].message });
-
-  try {
-    if (!fullname && !username && !email && !password)
-      return res.status(304).send();
-
-    const user = await User.findById(req.user._id);
-    if (fullname) user.fullname = fullname;
-    if (username) user.username = username;
-    if (email) user.email = email;
-    if (password) user.password = await encryptPassword(password);
-    await user.save();
-    const token = createToken(user);
-    res.send(token);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Internal Server Error" });
-  }
-});
-
-router.delete("/", auth, async (req, res) => {
-  const { _id } = req.user;
-
-  try {
-    await User.deleteOne({ _id });
-    res.json({
-      user: {
-        _id,
-      },
-    });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Internal Server Error" });
-  }
-});
-
-const encryptPassword = async (password) => {
-  const salt = await bcrypt.genSalt(10);
-  return await bcrypt.hash(password, salt);
-};
-
-const validateData = (data, schema) => {
-  const { error } = schema.validate(data);
-  if (error) return error;
-};
 
 module.exports = router;

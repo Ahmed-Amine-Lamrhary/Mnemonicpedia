@@ -2,8 +2,7 @@ import React, { useState } from "react";
 import axios from "axios";
 import Form from "../forms/Form";
 import FormGroup from "../forms/GroupForm";
-import { login } from "../../utility/auth";
-import config from "../../utility/config";
+import { login } from "../../api/me";
 import FormCheck from "../forms/FormCheck";
 import Button from "../other/Button";
 import FormNavigation from "../forms/FormNavigation";
@@ -14,14 +13,11 @@ function Login({ history, location }) {
   const [keepLogin, setKeepLogin] = useState(false);
 
   const handleLogin = async (e) => {
-    const { data: token } = await axios.post(`${config.api}/auth`, {
-      email,
-      password,
-      keepLogin,
-    });
-
-    // save user's token and redirect to dashboard
-    login(token, history, "/me");
+    try {
+      await login({ email, password, keepLogin }, history);
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   return (

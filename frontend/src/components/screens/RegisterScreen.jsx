@@ -1,10 +1,9 @@
 import React, { useState } from "react";
-import axios from "axios";
 import Form from "../forms/Form";
 import FormGroup from "../forms/GroupForm";
-import config from "../../utility/config";
 import Button from "../other/Button";
 import FormNavigation from "../forms/FormNavigation";
+import { register } from "../../api/me";
 
 function Register({ history, location }) {
   const [fullname, setFullname] = useState("");
@@ -14,26 +13,14 @@ function Register({ history, location }) {
   const [password2, setPassword2] = useState("");
 
   const handleRegister = async () => {
-    const {
-      data: { user },
-    } = await axios.post(`${config.api}/user`, {
-      fullname,
-      username,
-      email,
-      password,
-      password2,
-    });
-
-    // redirect to login
-    history.push({
-      pathname: "/login",
-      state: {
-        message: {
-          type: "success",
-          value: `You are registered succussfully ${user.fullname}. Please login.`,
-        },
-      },
-    });
+    try {
+      await register(
+        { fullname, username, email, password, password2 },
+        history
+      );
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   return (

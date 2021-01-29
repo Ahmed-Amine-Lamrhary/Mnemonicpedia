@@ -1,14 +1,14 @@
 import React from "react";
 import { Redirect, Route } from "react-router-dom";
-import { getToken, logout } from "../../utility/auth";
+import { getMe } from "../../api/me";
 
 function PrivateRoute({ component: Component, ...rest }) {
   return (
     <Route
       {...rest}
       render={(props) => {
-        if (!getToken()) return <Redirect to="/login" />;
-        return <Component {...props} logout={() => logout(props.history)} />;
+        if (!getMe()) return <Redirect to="/login" />;
+        return <Component {...props} />;
       }}
     />
   );

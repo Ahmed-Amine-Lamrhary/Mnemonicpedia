@@ -1,14 +1,15 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import colors from "../../utility/colors";
-import { getUser } from "../../utility/user";
+import { getMe } from "../../api/me";
 import Button from "./Button";
 import generateUrl from "generate-url";
 
 function Mnemonic({ mnemonic, onDelete, onLike }) {
   const { _id, title, content, author, likes } = mnemonic;
+
   if (!_id) return null;
-  const user = getUser();
+  const user = getMe();
 
   return (
     <div style={style.container} className="mnemonic">
@@ -25,7 +26,7 @@ function Mnemonic({ mnemonic, onDelete, onLike }) {
       ) : null}
 
       <h4 style={style.title}>
-        <Link style={style.titleLink} to={`/${generateUrl(title)}-${_id}`}>
+        <Link style={style.titleLink} to={`/${generateUrl(title)}/${_id}`}>
           {title}
         </Link>
       </h4>
@@ -34,14 +35,16 @@ function Mnemonic({ mnemonic, onDelete, onLike }) {
 
       <div style={style.helpful} className="helpful">
         Helpful?
-        <Button
-          bgColor={likes.includes(user._id) ? "primary" : "white"}
-          addStyle={style.btn}
-          onClick={() => onLike(mnemonic)}
-        >
-          <i style={style.btnIcon} className="ri-thumb-up-line"></i>
-          <span>{likes.length}</span>
-        </Button>
+        {user && (
+          <Button
+            bgColor={likes.includes(user._id) ? "primary" : "white"}
+            addStyle={style.btn}
+            onClick={() => onLike(mnemonic)}
+          >
+            <i style={style.btnIcon} className="ri-thumb-up-line"></i>
+            <span>{likes.length}</span>
+          </Button>
+        )}
         <Button bgColor="white" addStyle={style.btn}>
           <i style={style.btnIcon} className="ri-share-forward-line"></i> Share
         </Button>
@@ -49,7 +52,9 @@ function Mnemonic({ mnemonic, onDelete, onLike }) {
 
       {user ? (
         user._id === author ? (
-          <Button onClick={() => onDelete(_id)}>Delete</Button>
+          <Button bgColor="danger" onClick={() => onDelete(_id)}>
+            Delete
+          </Button>
         ) : null
       ) : null}
 

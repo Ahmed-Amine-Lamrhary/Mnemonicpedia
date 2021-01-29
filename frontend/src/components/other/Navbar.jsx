@@ -1,10 +1,10 @@
 import React from "react";
-import { getUser } from "../../utility/user";
+import { getMe } from "../../api/me";
 import Button from "./Button";
 import Logo from "./Logo";
 
 function Navbar(props) {
-  const user = getUser();
+  const user = getMe();
 
   return (
     <>

@@ -1,35 +1,35 @@
 import React, { useEffect, useState } from "react";
 import Form from "../forms/Form";
 import FormGroup from "../forms/GroupForm";
-import axios from "axios";
-import config from "../../utility/config";
 import Button from "../other/Button";
-import { getToken } from "../../utility/auth";
 import Editor from "../forms/Editor";
+import { getCategories } from "../../api/category";
+import { createMnemonic } from "../../api/mnemonic";
 
 function Submit(props) {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [categories, setCategories] = useState([]);
 
-  axios.defaults.headers.common["x-auth-token"] = getToken();
-
   useEffect(() => {
-    getCategories();
+    handleGetCategories();
   }, []);
 
-  const getCategories = async () => {
-    const { data } = await axios.get(`${config.api}/category`);
-    setCategories(data);
+  const handleGetCategories = async () => {
+    try {
+      const { data } = await getCategories();
+      setCategories(data);
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   const handleSubmit = async () => {
-    const { data } = await axios.post(`${config.api}/mnemonic`, {
-      title,
-      content,
-      categories,
-    });
-    console.log(data);
+    try {
+      await createMnemonic({ title, content, categories });
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   return (

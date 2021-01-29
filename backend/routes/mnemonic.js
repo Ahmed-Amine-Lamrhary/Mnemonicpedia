@@ -3,6 +3,7 @@ const Mnemonic = require("../models/Mnemonic");
 const auth = require("../middlewares/auth");
 const Joi = require("joi");
 const router = express.Router();
+const ObjectId = require("mongoose").Types.ObjectId;
 
 const schema = Joi.object({
   title: Joi.string().min(3).max(20).required(),
@@ -14,6 +15,26 @@ router.get("/", async (req, res) => {
   try {
     const mnemonics = await Mnemonic.find({ isPublished: true });
     res.json(mnemonics);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+router.get("/:id", async (req, res) => {
+  const { id } = req.params;
+
+  // check if id is valid
+  if (!ObjectId.isValid(id))
+    return res.status(400).json({ error: "Id is not valid" });
+
+  // check if mnemonic exists
+  try {
+    const mnemonic = await Mnemonic.findOne({ _id: id, isPublished: true });
+    if (!mnemonic)
+      return res.status(404).json({ error: "Mnemonic does not exist" });
+
+    res.json(mnemonic);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Internal Server Error" });

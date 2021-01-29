@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { Link } from "react-router-dom";
 import colors from "../../utility/colors";
 
@@ -10,28 +10,19 @@ function Button({
   addStyle,
   ...rest
 }) {
-  const [theme, setTheme] = useState({});
-
-  useEffect(() => {
-    setTheme({
-      color:
-        bgColor === "light" || bgColor === "white"
-          ? colors.primary
-          : colors.white,
-      bgColor: colors.hasOwnProperty(bgColor)
-        ? colors[bgColor]
-        : colors.primary,
-    });
-  }, []);
-
   if (to)
     return (
       <Link
         style={{
           ...style.button,
           ...addStyle,
-          backgroundColor: theme.bgColor,
-          color: theme.color,
+          backgroundColor: colors.hasOwnProperty(bgColor)
+            ? colors[bgColor]
+            : colors.primary,
+          color:
+            bgColor === "light" || bgColor === "white"
+              ? colors.primary
+              : colors.white,
         }}
         to={to}
         {...rest}
@@ -45,8 +36,13 @@ function Button({
       style={{
         ...style.button,
         ...addStyle,
-        backgroundColor: theme.bgColor,
-        color: theme.color,
+        backgroundColor: colors.hasOwnProperty(bgColor)
+          ? colors[bgColor]
+          : colors.primary,
+        color:
+          bgColor === "light" || bgColor === "white"
+            ? colors.primary
+            : colors.white,
       }}
       type={type}
       {...rest}
