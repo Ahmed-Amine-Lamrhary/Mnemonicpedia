@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Route, Switch } from "react-router-dom";
 import { getUser } from "../../api/user";
+import Mnemonics from "../other/Mnemonics";
 import Navs from "../other/Navs";
 
 function User({ history, match }) {
@@ -21,12 +22,6 @@ function User({ history, match }) {
     handleGetUser();
   }, []);
 
-  const getPosts = () => (
-    <>
-      <h1>Posts of {user.fullname}</h1>
-    </>
-  );
-
   const navs = () => {
     return [
       {
@@ -40,12 +35,22 @@ function User({ history, match }) {
     ];
   };
 
+  const { fullname, username } = user;
+
   return (
     <div className="container">
       <Navs navs={navs()} />
 
+      <div>
+        <h1>{fullname}</h1>
+        <h5>@{username}</h5>
+      </div>
+
       <Switch>
-        <Route path="/user/:id/posts" render={() => getPosts()} />
+        <Route
+          path="/user/:id/posts"
+          render={() => <Mnemonics query={{ author: params.id }} />}
+        />
       </Switch>
     </div>
   );

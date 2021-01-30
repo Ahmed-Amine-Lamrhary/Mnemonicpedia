@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import axios from "axios";
 import Form from "../forms/Form";
 import FormGroup from "../forms/GroupForm";
 import { login } from "../../api/me";
@@ -12,12 +11,8 @@ function Login({ history, location }) {
   const [password, setPassword] = useState("");
   const [keepLogin, setKeepLogin] = useState(false);
 
-  const handleLogin = async (e) => {
-    try {
-      await login({ email, password, keepLogin }, history);
-    } catch (error) {
-      console.error(error);
-    }
+  const handleLogin = async () => {
+    await login({ email, password, keepLogin }, history);
   };
 
   return (

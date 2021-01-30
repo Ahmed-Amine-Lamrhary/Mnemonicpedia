@@ -4,6 +4,8 @@ const auth = require("../middlewares/auth");
 const Joi = require("joi");
 const router = express.Router();
 const ObjectId = require("mongoose").Types.ObjectId;
+const ReportMnemonic = require("../models/ReportMnemonic");
+const User = require("../models/User");
 
 const schema = Joi.object({
   title: Joi.string().min(3).max(20).required(),
@@ -11,9 +13,36 @@ const schema = Joi.object({
   categories: Joi.array().items(Joi.object()).allow(null),
 });
 
+const reportSchema = Joi.object({
+  title: Joi.string().min(3).max(20).required(),
+  content: Joi.string().min(20).max(200).required(),
+});
+
 router.get("/", async (req, res) => {
+  let query = { isPublished: true };
+
+  // search queries
+  const { author, page = 1 } = req.query;
+  const size = 5;
+  let skip = 0;
+  if (page > 1) skip = (page - 1) * size;
+
+  if (author && ObjectId.isValid(author)) {
+    try {
+      const user = await User.findById(author);
+      if (user) query.author = author;
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: "Internal Server Error" });
+    }
+  }
+
+  // get mnemonics
   try {
-    const mnemonics = await Mnemonic.find({ isPublished: true });
+    const mnemonics = await Mnemonic.find(query)
+      .skip(skip)
+      .limit(size)
+      .sort("-dateCreated");
     res.json(mnemonics);
   } catch (error) {
     console.error(error);
@@ -44,7 +73,7 @@ router.get("/:id", async (req, res) => {
 router.post("/", auth, async (req, res) => {
   const { title, content, categories } = req.body;
 
-  const error = validateData(req.body);
+  const error = validateData(req.body, schema);
   if (error) return res.status(400).json({ error: error.details[0].message });
 
   try {
@@ -114,7 +143,44 @@ router.delete("/", auth, async (req, res) => {
   }
 });
 
-const validateData = (data) => {
+router.post("/report/:id", auth, async (req, res) => {
+  const { title, content } = req.body;
+  const { id: mnemonicId } = req.params;
+  const { _id: userId } = req.user;
+
+  // validate data
+  const error = validateData(req.body, reportSchema);
+  if (error) return res.status(400).json({ error: error.details[0].message });
+
+  // is id given
+  if (!mnemonicId) return res.status(400).json({ error: "No id was given" });
+
+  try {
+    // check if mnemonic exists and doesn't belong to him
+    const mnemonic = await Mnemonic.findOne({
+      _id: mnemonicId,
+      isPublished: true,
+      author: { $ne: userId },
+    });
+    if (!mnemonic)
+      return res.status(404).json({
+        error: "Mnemonic is not available or user is not allowed to report it.",
+      });
+
+    // report
+    const data = { mnemonic: mnemonicId, author: userId, title, content };
+    const reportMnemonic = new ReportMnemonic(data);
+    await reportMnemonic.save();
+    res.json({
+      reportMnemonic: data,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+const validateData = (data, schema) => {
   const { error } = schema.validate(data);
   if (error) return error;
 };

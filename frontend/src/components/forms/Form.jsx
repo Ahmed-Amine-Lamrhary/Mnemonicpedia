@@ -31,6 +31,7 @@ function Form({ onSubmit, location, children }) {
     try {
       await onSubmit();
     } catch (error) {
+      console.error(error);
       setError(error.response.data.error);
     } finally {
       setLoading(false);

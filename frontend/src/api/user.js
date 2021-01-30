@@ -13,4 +13,12 @@ const updateUser = () => {};
 
 const deleteUser = () => {};
 
-export { getUser, updateUser, deleteUser };
+const reportUser = async ({ _id, title, content }) => {
+  const response = await axios.post(`${config.api}/${resource}/report/${_id}`, {
+    title,
+    content,
+  });
+  return response;
+};
+
+export { getUser, updateUser, deleteUser, reportUser };

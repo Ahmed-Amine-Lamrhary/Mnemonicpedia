@@ -13,14 +13,7 @@ function Register({ history, location }) {
   const [password2, setPassword2] = useState("");
 
   const handleRegister = async () => {
-    try {
-      await register(
-        { fullname, username, email, password, password2 },
-        history
-      );
-    } catch (error) {
-      console.error(error);
-    }
+    await register({ fullname, username, email, password, password2 }, history);
   };
 
   return (

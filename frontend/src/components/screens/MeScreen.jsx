@@ -6,6 +6,7 @@ import { Route, Switch } from "react-router-dom";
 import Button from "../other/Button";
 import Navs from "../other/Navs";
 import { getMe, updateMe, deleteMe, logout } from "../../api/me";
+import Mnemonics from "../other/Mnemonics";
 
 function MeScreen({ history, match }) {
   const { _id, fullname, username, email } = getMe() || {};
@@ -87,12 +88,6 @@ function MeScreen({ history, match }) {
     </>
   );
 
-  const getPosts = () => (
-    <>
-      <h1>Posts</h1>
-    </>
-  );
-
   const navs = () => {
     return [
       {
@@ -135,8 +130,16 @@ function MeScreen({ history, match }) {
       />
       <Navs navs={navs()} />
 
+      <div>
+        <h1>{fullname}</h1>
+        <h5>@{username}</h5>
+      </div>
+
       <Switch>
-        <Route path="/me/posts" render={() => getPosts()} />
+        <Route
+          path="/me/posts"
+          render={() => <Mnemonics query={{ author: _id }} />}
+        />
         <Route path="/me/settings" render={() => updateForm()} />
       </Switch>
     </div>
