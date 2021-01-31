@@ -1,12 +1,8 @@
 const express = require("express");
 const Category = require("../models/Category");
-const Joi = require("joi");
 const auth = require("../middlewares/auth");
 const router = express.Router();
-
-const schema = Joi.object({
-  name: Joi.string().min(3).max(20).required(),
-});
+const { categorySchema, validateData } = require("../config/validation");
 
 router.get("/", async (req, res) => {
   try {
@@ -14,14 +10,14 @@ router.get("/", async (req, res) => {
     res.json(categories);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: "Internal Server Error" });
+    res.status(500).json({ error: error.message });
   }
 });
 
 router.post("/", auth, async (req, res) => {
   const { name } = req.body;
 
-  const error = validateData(req.body);
+  const error = validateData(req.body, categorySchema);
   if (error) return res.status(400).json({ error: error.details[0].message });
 
   try {
@@ -41,13 +37,8 @@ router.post("/", auth, async (req, res) => {
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: "Internal Server Error" });
+    res.status(500).json({ error: error.message });
   }
 });
-
-const validateData = (data) => {
-  const { error } = schema.validate(data);
-  if (error) return error;
-};
 
 module.exports = router;

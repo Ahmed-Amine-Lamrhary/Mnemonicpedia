@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import Alert from "./Alert";
-import Loading from "./LoadingForm";
+import Loading from "./../other/Loading";
 
 function Form({ onSubmit, location, children }) {
   const [error, setError] = useState("");

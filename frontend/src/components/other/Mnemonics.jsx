@@ -4,11 +4,14 @@ import { deleteMnemonic, getMnemonics, likeMnemonic } from "../../api/mnemonic";
 import Button from "./Button";
 import Mnemonic from "./Mnemonic";
 import Nothing from "./Nothing";
+import Loading from "./Loading";
 
 function Mnemonics({ query }) {
   const [mnemonics, setMnemonics] = useState([]);
   const [page, setPage] = useState(1);
   const [reachEnd, setReachEnd] = useState(false);
+  const [loading, setLoading] = useState(false);
+
   const user = getMe();
 
   const handleDelete = async (_id) => {
@@ -23,6 +26,7 @@ function Mnemonics({ query }) {
   };
 
   const handleGet = async (currentPage = page) => {
+    setLoading(true);
     try {
       const { data } = await getMnemonics({ ...query, page: currentPage });
       if (data.length === 0) return setReachEnd(true);
@@ -31,6 +35,8 @@ function Mnemonics({ query }) {
       setMnemonics(newMnemonics);
     } catch (error) {
       console.error(error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -81,11 +87,14 @@ function Mnemonics({ query }) {
               onLike={handleLike}
             />
           ))}
-          <Button onClick={loadMore}>Load More</Button>
         </>
       ) : (
         <Nothing model="mnemonic" />
       )}
+
+      <Loading loading={loading} />
+
+      {!loading && <Button onClick={loadMore}>Load More</Button>}
     </>
   );
 }

@@ -10,43 +10,27 @@ function Button({
   addStyle,
   ...rest
 }) {
+  const btnStyle = {
+    ...style.button,
+    ...addStyle,
+    backgroundColor: colors.hasOwnProperty(bgColor)
+      ? colors[bgColor]
+      : colors.primary,
+    color:
+      bgColor === "light" || bgColor === "white"
+        ? colors.primary
+        : colors.white,
+  };
+
   if (to)
     return (
-      <Link
-        style={{
-          ...style.button,
-          ...addStyle,
-          backgroundColor: colors.hasOwnProperty(bgColor)
-            ? colors[bgColor]
-            : colors.primary,
-          color:
-            bgColor === "light" || bgColor === "white"
-              ? colors.primary
-              : colors.white,
-        }}
-        to={to}
-        {...rest}
-      >
+      <Link style={btnStyle} to={to} {...rest}>
         {children}
       </Link>
     );
 
   return (
-    <button
-      style={{
-        ...style.button,
-        ...addStyle,
-        backgroundColor: colors.hasOwnProperty(bgColor)
-          ? colors[bgColor]
-          : colors.primary,
-        color:
-          bgColor === "light" || bgColor === "white"
-            ? colors.primary
-            : colors.white,
-      }}
-      type={type}
-      {...rest}
-    >
+    <button style={btnStyle} type={type} {...rest}>
       {children}
     </button>
   );

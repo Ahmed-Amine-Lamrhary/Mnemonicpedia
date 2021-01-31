@@ -1,22 +1,15 @@
 const express = require("express");
 const Mnemonic = require("../models/Mnemonic");
 const auth = require("../middlewares/auth");
-const Joi = require("joi");
 const router = express.Router();
 const ObjectId = require("mongoose").Types.ObjectId;
 const ReportMnemonic = require("../models/ReportMnemonic");
 const User = require("../models/User");
-
-const schema = Joi.object({
-  title: Joi.string().min(3).max(20).required(),
-  content: Joi.string().min(20).max(200).required(),
-  categories: Joi.array().items(Joi.object()).allow(null),
-});
-
-const reportSchema = Joi.object({
-  title: Joi.string().min(3).max(20).required(),
-  content: Joi.string().min(20).max(200).required(),
-});
+const {
+  mnemonicSchema,
+  reportMnemonicSchema,
+  validateData,
+} = require("../config/validation");
 
 router.get("/", async (req, res) => {
   let query = { isPublished: true };
@@ -33,7 +26,7 @@ router.get("/", async (req, res) => {
       if (user) query.author = author;
     } catch (error) {
       console.error(error);
-      res.status(500).json({ error: "Internal Server Error" });
+      res.status(500).json({ error: error.message });
     }
   }
 
@@ -66,14 +59,14 @@ router.get("/:id", async (req, res) => {
     res.json(mnemonic);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: "Internal Server Error" });
+    res.status(500).json({ error: error.message });
   }
 });
 
 router.post("/", auth, async (req, res) => {
   const { title, content, categories } = req.body;
 
-  const error = validateData(req.body, schema);
+  const error = validateData(req.body, mnemonicSchema);
   if (error) return res.status(400).json({ error: error.details[0].message });
 
   try {
@@ -93,7 +86,7 @@ router.post("/", auth, async (req, res) => {
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: "Internal Server Error" });
+    res.status(500).json({ error: error.message });
   }
 });
 
@@ -115,7 +108,7 @@ router.put("/like", auth, async (req, res) => {
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: "Internal Server Error" });
+    res.status(500).json({ error: error.message });
   }
 });
 
@@ -139,7 +132,7 @@ router.delete("/", auth, async (req, res) => {
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: "Internal Server Error" });
+    res.status(500).json({ error: error.message });
   }
 });
 
@@ -149,7 +142,7 @@ router.post("/report/:id", auth, async (req, res) => {
   const { _id: userId } = req.user;
 
   // validate data
-  const error = validateData(req.body, reportSchema);
+  const error = validateData(req.body, reportMnemonicSchema);
   if (error) return res.status(400).json({ error: error.details[0].message });
 
   // is id given
@@ -176,13 +169,8 @@ router.post("/report/:id", auth, async (req, res) => {
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: "Internal Server Error" });
+    res.status(500).json({ error: error.message });
   }
 });
-
-const validateData = (data, schema) => {
-  const { error } = schema.validate(data);
-  if (error) return error;
-};
 
 module.exports = router;

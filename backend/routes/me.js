@@ -3,24 +3,12 @@ const router = express.Router();
 const User = require("../models/User");
 const bcrypt = require("bcrypt");
 const auth = require("../middlewares/auth");
-const Joi = require("joi");
 const { createToken } = require("../config/jwt");
-
-const registerSchema = Joi.object({
-  fullname: Joi.string().min(3).max(10).required(),
-  username: Joi.string().min(3).max(10).required(),
-  email: Joi.string().email().required(),
-  password: Joi.string().pattern(new RegExp("^[a-zA-Z0-9]{3,30}$")).required(),
-  password2: Joi.ref("password"),
-});
-
-const updateSchema = Joi.object({
-  fullname: Joi.string().allow("").min(3).max(10),
-  username: Joi.string().allow("").min(3).max(10),
-  email: Joi.string().allow("").email(),
-  password: Joi.string().allow("").pattern(new RegExp("^[a-zA-Z0-9]{3,30}$")),
-  password2: Joi.ref("password"),
-});
+const {
+  registerSchema,
+  updateMeSchema,
+  validateData,
+} = require("../config/validation");
 
 router.post("/", async (req, res) => {
   const { fullname, username, email, password } = req.body;
@@ -52,14 +40,14 @@ router.post("/", async (req, res) => {
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: "Internal Server Error" });
+    res.status(500).json({ error: error.message });
   }
 });
 
 router.put("/", auth, async (req, res) => {
   const { fullname, username, email, password } = req.body;
 
-  const error = validateData(req.body, updateSchema);
+  const error = validateData(req.body, updateMeSchema);
   if (error) return res.status(400).json({ error: error.details[0].message });
 
   try {
@@ -76,7 +64,7 @@ router.put("/", auth, async (req, res) => {
     res.send(token);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: "Internal Server Error" });
+    res.status(500).json({ error: error.message });
   }
 });
 
@@ -92,18 +80,13 @@ router.delete("/", auth, async (req, res) => {
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: "Internal Server Error" });
+    res.status(500).json({ error: error.message });
   }
 });
 
 const encryptPassword = async (password) => {
   const salt = await bcrypt.genSalt(10);
   return await bcrypt.hash(password, salt);
-};
-
-const validateData = (data, schema) => {
-  const { error } = schema.validate(data);
-  if (error) return error;
 };
 
 module.exports = router;

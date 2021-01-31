@@ -1,9 +1,9 @@
 import React from "react";
-import { Link } from "react-router-dom";
-import colors from "../../utility/colors";
-import { getMe } from "../../api/me";
-import Button from "./Button";
 import generateUrl from "generate-url";
+import { Link } from "react-router-dom";
+import { getMe } from "../../api/me";
+import colors from "../../utility/colors";
+import Button from "./Button";
 
 function Mnemonic({ mnemonic, onDelete, onLike }) {
   const { _id, title, content, author, likes } = mnemonic;
@@ -13,17 +13,13 @@ function Mnemonic({ mnemonic, onDelete, onLike }) {
 
   return (
     <div style={style.container} className="mnemonic">
-      {user ? (
-        user._id !== author ? (
-          <Link
-            style={style.report}
-            to={`/report-mnemonic/${_id}`}
-            className="report"
-          >
-            <i className="ri-flag-2-line"></i>
-          </Link>
-        ) : null
-      ) : null}
+      <Link
+        style={style.report}
+        to={`/report-mnemonic/${_id}`}
+        className="report"
+      >
+        <i className="ri-flag-2-line"></i>
+      </Link>
 
       <h4 style={style.title}>
         <Link style={style.titleLink} to={`/${generateUrl(title)}/${_id}`}>
@@ -31,7 +27,7 @@ function Mnemonic({ mnemonic, onDelete, onLike }) {
         </Link>
       </h4>
 
-      <div>{content}</div>
+      <div dangerouslySetInnerHTML={{ __html: content }} />
 
       <div style={style.helpful} className="helpful">
         Helpful?
@@ -45,18 +41,22 @@ function Mnemonic({ mnemonic, onDelete, onLike }) {
             <span>{likes.length}</span>
           </Button>
         )}
+        {!user && (
+          <Button bgColor="white" addStyle={style.btn} to="/login">
+            <i style={style.btnIcon} className="ri-thumb-up-line"></i>
+            <span>{likes.length}</span>
+          </Button>
+        )}
         <Button bgColor="white" addStyle={style.btn}>
           <i style={style.btnIcon} className="ri-share-forward-line"></i> Share
         </Button>
       </div>
 
-      {user ? (
-        user._id === author ? (
-          <Button bgColor="danger" onClick={() => onDelete(_id)}>
-            Delete
-          </Button>
-        ) : null
-      ) : null}
+      {user && user._id === author && (
+        <Button bgColor="danger" onClick={() => onDelete(_id)}>
+          Delete
+        </Button>
+      )}
 
       <Link to={`/user/${author}`}>Author</Link>
     </div>

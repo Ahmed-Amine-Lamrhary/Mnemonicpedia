@@ -1,15 +1,24 @@
 import React from "react";
+// Require Editor JS files.
+import "froala-editor/js/froala_editor.pkgd.min.js";
+
+// Require Editor CSS files.
+import "froala-editor/css/froala_style.min.css";
+import "froala-editor/css/froala_editor.pkgd.min.css";
+
+import FroalaEditor from "react-froala-wysiwyg";
 
 function Editor({ label, value, onChange }) {
   return (
-    <textarea
-      style={style.input}
-      className="form-control"
-      placeholder={label}
-      onChange={onChange}
-    >
-      {value}
-    </textarea>
+    // <textarea
+    //   style={style.input}
+    //   className="form-control"
+    //   placeholder={label}
+    //   onChange={onChange}
+    // >
+    //   {value}
+    // </textarea>
+    <FroalaEditor onModelChange={onChange} model={value} tag="textarea" />
   );
 }
 

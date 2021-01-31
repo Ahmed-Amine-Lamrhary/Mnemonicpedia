@@ -3,13 +3,8 @@ const router = express.Router();
 const User = require("../models/User");
 const ObjectId = require("mongoose").Types.ObjectId;
 const ReportUser = require("../models/ReportUser");
-const Joi = require("joi");
 const auth = require("../middlewares/auth");
-
-const reportSchema = Joi.object({
-  title: Joi.string().min(3).max(20).required(),
-  content: Joi.string().min(20).max(200).required(),
-});
+const { reportUserSchema, validateData } = require("../config/validation");
 
 router.get("/:id", async (req, res) => {
   const { id } = req.params;
@@ -26,7 +21,7 @@ router.get("/:id", async (req, res) => {
     res.json(user);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: "Internal Server Error" });
+    res.status(500).json({ error: error.message });
   }
 });
 
@@ -36,7 +31,7 @@ router.post("/report/:id", auth, async (req, res) => {
   const { _id: userId } = req.user;
 
   // validate data
-  const error = validateData(req.body, reportSchema);
+  const error = validateData(req.body, reportUserSchema);
   if (error) return res.status(400).json({ error: error.details[0].message });
 
   // is id given
@@ -62,13 +57,8 @@ router.post("/report/:id", auth, async (req, res) => {
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: "Internal Server Error" });
+    res.status(500).json({ error: error.message });
   }
 });
-
-const validateData = (data, schema) => {
-  const { error } = schema.validate(data);
-  if (error) return error;
-};
 
 module.exports = router;

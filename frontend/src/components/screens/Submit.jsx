@@ -10,6 +10,7 @@ function Submit(props) {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [categories, setCategories] = useState([]);
+  // const [newCategory, setNewCategory] = useState("");
 
   useEffect(() => {
     handleGetCategories();
@@ -25,11 +26,15 @@ function Submit(props) {
   };
 
   const handleSubmit = async () => {
-    try {
-      await createMnemonic({ title, content, categories });
-    } catch (error) {
-      console.error(error);
-    }
+    await createMnemonic({ title, content, categories });
+  };
+
+  const addCategories = (e) => {
+    // const keyCode = window.event ? e.which : e.keyCode;
+    // if (keyCode !== 13) return;
+    // const value = e.target.value;
+    // const c = [...newCategories, value];
+    // setNewCategories(c);
   };
 
   return (
@@ -41,18 +46,19 @@ function Submit(props) {
           value={title}
           onChange={(e) => setTitle(e.target.value)}
         />
-        <Editor
-          label="Content"
-          value={content}
-          onChange={(e) => setContent(e.target.value)}
-        />
-        <select onChange={(e) => console.log(e.target.value)} multiple>
+
+        <Editor label="Content" value={content} onChange={setContent} />
+
+        {/* <div>
           {categories.map((category) => (
-            <option key={category._id} value={JSON.stringify(category)}>
-              {category.name}
-            </option>
+            <span key={category._id}>{category.name}</span>
           ))}
-        </select>
+          {newCategories.map((category) => (
+            <span>{category}</span>
+          ))}
+          <input type="text" placeholder="Categories" onKeyUp={addCategories} />
+        </div> */}
+
         <br />
         <Button type="submit">Submit</Button>
       </Form>

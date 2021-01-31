@@ -1,21 +1,15 @@
 const express = require("express");
 const router = express.Router();
-const Joi = require("joi");
-const User = require("../models/User");
 const bcrypt = require("bcrypt");
 const { createToken } = require("../config/jwt");
-
-const authSchema = Joi.object({
-  email: Joi.string().email().required(),
-  password: Joi.string().required(),
-  keepLogin: Joi.bool(),
-});
+const User = require("../models/User");
+const { authSchema, validateData } = require("../config/validation");
 
 router.post("/", async (req, res) => {
   const { email, password, keepLogin } = req.body;
 
   // validation
-  const { error } = authSchema.validate(req.body);
+  const error = validateData(req.body, authSchema);
   if (error) return res.status(400).json({ error: error.details[0].message });
 
   // check if email and password are valid

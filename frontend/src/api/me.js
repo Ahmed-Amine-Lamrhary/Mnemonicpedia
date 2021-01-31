@@ -26,7 +26,7 @@ const updateMe = async ({ fullname, username, email, password, password2 }) => {
     password2,
   });
 
-  if (token) setToken(token);
+  if (token) localStorage.setItem(key, token);
 };
 
 const login = async ({ email, password, keepLogin }, history) => {
@@ -37,7 +37,7 @@ const login = async ({ email, password, keepLogin }, history) => {
   });
 
   // save user's token and redirect to dashboard
-  setToken(token);
+  localStorage.setItem(key, token);
   history.replace("/me");
 };
 
@@ -77,10 +77,6 @@ const logout = (history, message) => {
       value: message,
     },
   });
-};
-
-const setToken = (token) => {
-  localStorage.setItem(key, token);
 };
 
 const getToken = () => {
