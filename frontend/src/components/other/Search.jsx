@@ -1,14 +1,12 @@
 import React, { useState } from "react";
-import { getMnemonics } from "../../api/mnemonic";
+// import { getMnemonics } from "../../api/mnemonic";
 
-function Search(props) {
+function Search({ onSubmit }) {
   const [value, setValue] = useState("");
 
   const handleSearch = async (e) => {
     e.preventDefault();
-
-    const { data } = await getMnemonics({ text: value });
-    console.log(data);
+    onSubmit(value);
   };
 
   return (

@@ -12,6 +12,7 @@ function Mnemonics({ query }) {
   const [page, setPage] = useState(1);
   const [reachEnd, setReachEnd] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [searchedText, setSearchedText] = useState("");
 
   const user = getMe();
 
@@ -26,10 +27,13 @@ function Mnemonics({ query }) {
     }
   };
 
-  const handleGet = async (currentPage = page) => {
+  const handleGet = async () => {
+    const filter = { text: searchedText };
+    const finalQuery = { ...query, ...filter, page };
+
     setLoading(true);
     try {
-      const { data } = await getMnemonics({ ...query, page: currentPage });
+      const { data } = await getMnemonics(finalQuery);
       if (data.length === 0) return setReachEnd(true);
 
       const newMnemonics = [...mnemonics, ...data];
@@ -44,9 +48,7 @@ function Mnemonics({ query }) {
   const loadMore = () => {
     if (reachEnd) return;
 
-    const currentPage = page + 1;
-    setPage(currentPage);
-    handleGet(currentPage);
+    setPage(page + 1);
   };
 
   const handleLike = async (mnemonic) => {
@@ -76,12 +78,22 @@ function Mnemonics({ query }) {
     handleGet();
   }, []);
 
+  useEffect(() => {
+    handleGet();
+  }, [searchedText, page]);
+
+  const handleSearch = async (searchText) => {
+    setMnemonics([]);
+    setPage(1);
+    setReachEnd(false);
+    setSearchedText(searchText);
+  };
+
   return (
     <>
+      <Search onSubmit={handleSearch} />
       {mnemonics.length > 0 ? (
         <>
-          <Search onSubmit={handleGet} />
-
           {mnemonics.map((mnemonic, index) => (
             <Mnemonic
               key={index}
