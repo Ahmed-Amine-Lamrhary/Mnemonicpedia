@@ -33,6 +33,8 @@ const schema = mongoose.Schema({
   },
 });
 
+schema.index({ title: "text" });
+
 const Mnemonic = new mongoose.model("mnemonic", schema);
 
 module.exports = Mnemonic;

@@ -15,7 +15,7 @@ router.get("/", async (req, res) => {
   let query = { isPublished: true };
 
   // search queries
-  const { author, page = 1 } = req.query;
+  const { author = "", page = 1, text = "" } = req.query;
   const size = 5;
   let skip = 0;
   if (page > 1) skip = (page - 1) * size;
@@ -29,6 +29,8 @@ router.get("/", async (req, res) => {
       res.status(500).json({ error: error.message });
     }
   }
+
+  if (text) query.$text = { $search: text };
 
   // get mnemonics
   try {

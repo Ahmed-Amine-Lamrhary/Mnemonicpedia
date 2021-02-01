@@ -13,9 +13,9 @@ const deleteMnemonic = async (_id) => {
 };
 
 const getMnemonics = async (query) => {
-  const { author, page } = query || {};
+  const { author = "", page = 1, text = "" } = query || {};
   const response = await axios.get(
-    `${config.api}/${resource}?author=${author}&page=${page}`
+    `${config.api}/${resource}?author=${author}&page=${page}&text=${text}`
   );
   return response;
 };

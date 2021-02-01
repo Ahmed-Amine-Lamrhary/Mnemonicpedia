@@ -5,6 +5,7 @@ import Button from "./Button";
 import Mnemonic from "./Mnemonic";
 import Nothing from "./Nothing";
 import Loading from "./Loading";
+import Search from "./Search";
 
 function Mnemonics({ query }) {
   const [mnemonics, setMnemonics] = useState([]);
@@ -79,6 +80,8 @@ function Mnemonics({ query }) {
     <>
       {mnemonics.length > 0 ? (
         <>
+          <Search onSubmit={handleGet} />
+
           {mnemonics.map((mnemonic, index) => (
             <Mnemonic
               key={index}

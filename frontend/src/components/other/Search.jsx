@@ -1,9 +1,29 @@
-import React from "react";
+import React, { useState } from "react";
+import { getMnemonics } from "../../api/mnemonic";
 
 function Search(props) {
+  const [value, setValue] = useState("");
+
+  const handleSearch = async (e) => {
+    e.preventDefault();
+
+    const { data } = await getMnemonics({ text: value });
+    console.log(data);
+  };
+
   return (
-    <form style={style.container} className="search-bar">
-      <input style={style.input} type="text" placeholder="Search" />
+    <form
+      style={style.container}
+      onSubmit={handleSearch}
+      className="search-bar"
+    >
+      <input
+        style={style.input}
+        type="text"
+        placeholder="Search"
+        value={value}
+        onChange={(e) => setValue(e.target.value)}
+      />
       <i style={style.icon} className="ri-search-line"></i>
     </form>
   );
