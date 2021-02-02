@@ -1,22 +1,22 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import Form from "../forms/Form";
 import FormGroup from "../forms/GroupForm";
 import Button from "../other/Button";
 import Editor from "../forms/Editor";
 import { getCategories } from "../../api/category";
 import { createMnemonic } from "../../api/mnemonic";
+import GroupFormDropdown from "../forms/GroupFormDropdown";
 
 function Submit(props) {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
+  const [category, setCategory] = useState("");
   const [categories, setCategories] = useState([]);
-  // const [newCategory, setNewCategory] = useState("");
+  const [selectedCategories, setSelectedCategories] = useState([]);
 
-  useEffect(() => {
-    handleGetCategories();
-  }, []);
+  const handleGetCategories = async (searched) => {
+    setCategory(searched);
 
-  const handleGetCategories = async () => {
     try {
       const { data } = await getCategories();
       setCategories(data);
@@ -25,16 +25,13 @@ function Submit(props) {
     }
   };
 
-  const handleSubmit = async () => {
-    await createMnemonic({ title, content, categories });
+  const selectCategory = (item) => {
+    const selected = [...selectedCategories, item];
+    setSelectedCategories(selected);
   };
 
-  const addCategories = (e) => {
-    // const keyCode = window.event ? e.which : e.keyCode;
-    // if (keyCode !== 13) return;
-    // const value = e.target.value;
-    // const c = [...newCategories, value];
-    // setNewCategories(c);
+  const handleSubmit = async () => {
+    await createMnemonic({ title, content, categories });
   };
 
   return (
@@ -49,15 +46,17 @@ function Submit(props) {
 
         <Editor label="Content" value={content} onChange={setContent} />
 
-        {/* <div>
-          {categories.map((category) => (
-            <span key={category._id}>{category.name}</span>
-          ))}
-          {newCategories.map((category) => (
-            <span>{category}</span>
-          ))}
-          <input type="text" placeholder="Categories" onKeyUp={addCategories} />
-        </div> */}
+        <br />
+
+        <GroupFormDropdown
+          type="text"
+          label="Categories"
+          value={category}
+          items={categories}
+          onChange={(e) => handleGetCategories(e.target.value)}
+          onSelect={selectCategory}
+          selected={selectedCategories}
+        />
 
         <br />
         <Button type="submit">Submit</Button>
