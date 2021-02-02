@@ -34,10 +34,17 @@ router.get("/", async (req, res) => {
 
   // get mnemonics
   try {
-    const mnemonics = await Mnemonic.find(query)
+    let mnemonics = await Mnemonic.find(query)
       .skip(skip)
       .limit(size)
       .sort("-dateCreated");
+
+    for (let i = 0; i < mnemonics.length; i++) {
+      const mnemonic = mnemonics[i];
+      const user = await User.findById(mnemonic.author).select("-password");
+      mnemonic.author = user;
+    }
+
     res.json(mnemonics);
   } catch (error) {
     console.error(error);

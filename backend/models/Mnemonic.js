@@ -25,7 +25,8 @@ const schema = mongoose.Schema({
   },
   likes: {
     type: Array,
-    default: [],
+    default: [mongoose.Schema.ObjectId],
+    ref: "user",
   },
   categories: {
     type: [mongoose.Schema.ObjectId],
@@ -33,7 +34,7 @@ const schema = mongoose.Schema({
   },
 });
 
-schema.index({ title: "text" });
+schema.index({ content: "text" });
 
 const Mnemonic = new mongoose.model("mnemonic", schema);
 

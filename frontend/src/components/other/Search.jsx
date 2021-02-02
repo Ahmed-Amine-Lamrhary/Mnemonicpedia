@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-// import { getMnemonics } from "../../api/mnemonic";
 
 function Search({ onSubmit }) {
   const [value, setValue] = useState("");
@@ -7,6 +6,11 @@ function Search({ onSubmit }) {
   const handleSearch = async (e) => {
     e.preventDefault();
     onSubmit(value);
+  };
+
+  const revertSearch = () => {
+    setValue("");
+    onSubmit("");
   };
 
   return (
@@ -23,6 +27,11 @@ function Search({ onSubmit }) {
         onChange={(e) => setValue(e.target.value)}
       />
       <i style={style.icon} className="ri-search-line"></i>
+      {value && (
+        <button onClick={revertSearch} type="button">
+          close
+        </button>
+      )}
     </form>
   );
 }

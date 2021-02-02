@@ -92,7 +92,8 @@ function Mnemonics({ query }) {
   return (
     <>
       <Search onSubmit={handleSearch} />
-      {mnemonics.length > 0 ? (
+
+      {mnemonics.length > 0 && (
         <>
           {mnemonics.map((mnemonic, index) => (
             <Mnemonic
@@ -103,13 +104,12 @@ function Mnemonics({ query }) {
             />
           ))}
         </>
-      ) : (
-        <Nothing model="mnemonic" />
       )}
+      {mnemonics.length === 0 && !loading && <Nothing model="mnemonic" />}
 
       <Loading loading={loading} />
 
-      {!loading && <Button onClick={loadMore}>Load More</Button>}
+      {!loading && !reachEnd && <Button onClick={loadMore}>Load More</Button>}
     </>
   );
 }

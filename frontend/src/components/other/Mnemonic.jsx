@@ -52,13 +52,13 @@ function Mnemonic({ mnemonic, onDelete, onLike }) {
         </Button>
       </div>
 
-      {user && user._id === author && (
+      {user && user._id === author._id && (
         <Button bgColor="danger" onClick={() => onDelete(_id)}>
           Delete
         </Button>
       )}
 
-      <Link to={`/user/${author}`}>Author</Link>
+      <Link to={`/user/${author._id}`}>{author.fullname}</Link>
     </div>
   );
 }
