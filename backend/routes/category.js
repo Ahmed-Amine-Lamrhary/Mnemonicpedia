@@ -2,11 +2,26 @@ const express = require("express");
 const Category = require("../models/Category");
 const auth = require("../middlewares/auth");
 const router = express.Router();
+const ObjectId = require("mongoose").Types.ObjectId;
 const { categorySchema, validateData } = require("../config/validation");
 
 router.get("/", async (req, res) => {
+  let query = {};
+
+  // search queries
+  const { text = "", exclude } = req.query;
+  if (text) query.$text = { $search: text };
+
+  const excludeList = JSON.parse(exclude);
+  if (excludeList.length > 0)
+    query._id = {
+      $nin: excludeList.map((categoryId) => {
+        if (ObjectId.isValid(categoryId)) return ObjectId(categoryId);
+      }),
+    };
+
   try {
-    const categories = await Category.find().select("name");
+    const categories = await Category.find(query).select("name");
     res.json(categories);
   } catch (error) {
     console.error(error);

@@ -16,9 +16,15 @@ function Submit(props) {
 
   const handleGetCategories = async (searched) => {
     setCategory(searched);
+    const selectedCategoriesIds = selectedCategories.map((category) => {
+      return category._id;
+    });
 
     try {
-      const { data } = await getCategories();
+      const { data } = await getCategories({
+        text: searched,
+        exclude: selectedCategoriesIds,
+      });
       setCategories(data);
     } catch (error) {
       console.error(error);
@@ -28,10 +34,15 @@ function Submit(props) {
   const selectCategory = (item) => {
     const selected = [...selectedCategories, item];
     setSelectedCategories(selected);
+
+    const newCategories = categories.filter(
+      (category) => category._id !== item._id
+    );
+    setCategories(newCategories);
   };
 
   const handleSubmit = async () => {
-    await createMnemonic({ title, content, categories });
+    await createMnemonic({ title, content, categories: selectedCategories });
   };
 
   return (

@@ -78,12 +78,19 @@ router.post("/", auth, async (req, res) => {
   const error = validateData(req.body, mnemonicSchema);
   if (error) return res.status(400).json({ error: error.details[0].message });
 
+  // duplicated categories
+  const cateogriesList = [];
+  categories.map((category) => {
+    if (!cateogriesList.some(({ _id }) => _id === category._id))
+      cateogriesList.push(category);
+  });
+
   try {
     const newMnemonic = new Mnemonic({
       title,
       content,
       author: req.user._id,
-      categories,
+      categories: cateogriesList,
     });
     await newMnemonic.save();
     res.json({
