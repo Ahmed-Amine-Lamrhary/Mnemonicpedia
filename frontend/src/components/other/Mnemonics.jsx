@@ -5,14 +5,57 @@ import Button from "./Button";
 import Mnemonic from "./Mnemonic";
 import Nothing from "./Nothing";
 import Loading from "./Loading";
-import Search from "./Search";
+import { useHistory, useLocation } from "react-router-dom";
+import { parse } from "query-string";
 
 function Mnemonics({ query }) {
   const [mnemonics, setMnemonics] = useState([]);
   const [page, setPage] = useState(1);
   const [reachEnd, setReachEnd] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [searchedText, setSearchedText] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [value, setValue] = useState("");
+
+  const history = useHistory();
+  const location = useLocation();
+
+  const getAll = async (searchText = "") => {
+    const filter = { text: searchText, page: 1 };
+    const finalQuery = { ...query, ...filter };
+
+    setReachEnd(false);
+    setMnemonics([]);
+    setLoading(true);
+
+    try {
+      const { data } = await getMnemonics(finalQuery);
+      setMnemonics(data);
+      if (data.length === 0) setReachEnd(true);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getLoaded = async () => {
+    let { search: searchText } = parse(location.search) || {};
+
+    const filter = { text: searchText, page: page + 1 };
+    const finalQuery = { ...query, ...filter };
+
+    setPage(page + 1);
+    setLoading(true);
+
+    try {
+      const { data } = await getMnemonics(finalQuery);
+      setMnemonics([...mnemonics, ...data]);
+      if (data.length === 0) setReachEnd(true);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const user = getMe();
 
@@ -25,30 +68,6 @@ function Mnemonics({ query }) {
     } catch (error) {
       console.log(error.response.data.error);
     }
-  };
-
-  const handleGet = async () => {
-    const filter = { text: searchedText };
-    const finalQuery = { ...query, ...filter, page };
-
-    setLoading(true);
-    try {
-      const { data } = await getMnemonics(finalQuery);
-      if (data.length === 0) return setReachEnd(true);
-
-      const newMnemonics = [...mnemonics, ...data];
-      setMnemonics(newMnemonics);
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const loadMore = () => {
-    if (reachEnd) return;
-
-    setPage(page + 1);
   };
 
   const handleLike = async (mnemonic) => {
@@ -75,23 +94,49 @@ function Mnemonics({ query }) {
   };
 
   useEffect(() => {
-    handleGet();
+    let { search } = parse(location.search) || {};
+    if (search) setValue(search);
+    else search = "";
+
+    getAll(search);
   }, []);
 
-  useEffect(() => {
-    handleGet();
-  }, [searchedText, page]);
+  const handleSearch = (e) => {
+    e.preventDefault();
+    if (value) history.push(`?search=${value}`);
+    else history.push("/");
 
-  const handleSearch = async (searchText) => {
-    setMnemonics([]);
-    setPage(1);
-    setReachEnd(false);
-    setSearchedText(searchText);
+    getAll(value);
+  };
+
+  const revertSearch = () => {
+    setValue("");
+    history.push("/");
+
+    getAll();
   };
 
   return (
     <>
-      <Search onSubmit={handleSearch} />
+      <form
+        style={style.container}
+        onSubmit={handleSearch}
+        className="search-bar"
+      >
+        <input
+          style={style.input}
+          type="text"
+          placeholder="Search"
+          value={value}
+          onChange={(e) => setValue(e.target.value)}
+        />
+        <i style={style.icon} className="ri-search-line"></i>
+        {value && (
+          <button onClick={revertSearch} type="button">
+            close
+          </button>
+        )}
+      </form>
 
       {mnemonics.length > 0 && (
         <>
@@ -109,9 +154,42 @@ function Mnemonics({ query }) {
 
       <Loading loading={loading} />
 
-      {!loading && !reachEnd && <Button onClick={loadMore}>Load More</Button>}
+      {!loading && !reachEnd && (
+        <Button onClick={() => getLoaded()}>Load More</Button>
+      )}
     </>
   );
 }
+
+const style = {
+  container: {
+    position: "relative",
+  },
+  icon: {
+    position: "absolute",
+    top: "10px",
+    left: "16px",
+    fontSize: "22px",
+    opacity: "0.5",
+  },
+  input: {
+    width: "100%",
+    border: "0",
+    background: "#f1f3f4",
+    fontFamily: "inherit",
+    fontSize: "15px",
+    fontWeight: "500",
+    color: "#707070",
+    padding: "0 50px",
+    borderRadius: "7px",
+    transition: "all 0.2s ease-in-out",
+    boxSizing: "border-box",
+    height: "52px",
+  },
+  inputFocus: {
+    boxShadow: "0 3px 6px rgba(0, 0, 0, 0.1)",
+    background: "white",
+  },
+};
 
 export default Mnemonics;
