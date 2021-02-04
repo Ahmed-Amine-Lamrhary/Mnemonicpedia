@@ -34,6 +34,7 @@ function App({ history }) {
           <PrivateRoute path="/me" component={MeScreen} />
           <Route path="/user/:id" component={User} />
           <PrivateRoute path="/submit" component={Submit} />
+          <PrivateRoute path="/edit/:id" component={Submit} />
           <PrivateRoute path="/report-user/:id" component={ReportUser} />
           <PrivateRoute
             path="/report-mnemonic/:id"

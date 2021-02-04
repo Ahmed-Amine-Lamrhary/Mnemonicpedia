@@ -6,29 +6,32 @@ import Mnemonic from "./Mnemonic";
 import Nothing from "./Nothing";
 import Loading from "./Loading";
 import { useHistory, useLocation } from "react-router-dom";
-import { parse } from "query-string";
+import { parse, stringify } from "query-string";
 
 function Mnemonics({ query }) {
   const [mnemonics, setMnemonics] = useState([]);
-  const [page, setPage] = useState(1);
   const [reachEnd, setReachEnd] = useState(false);
   const [loading, setLoading] = useState(true);
   const [value, setValue] = useState("");
+  const [filter, setFilter] = useState({});
 
   const history = useHistory();
   const location = useLocation();
 
-  const getAll = async (searchText = "") => {
-    const filter = { text: searchText, page: 1 };
+  const handleGet = async () => {
     const finalQuery = { ...query, ...filter };
 
-    setReachEnd(false);
-    setMnemonics([]);
+    if (!filter.load) {
+      setReachEnd(false);
+      setMnemonics([]);
+    }
     setLoading(true);
 
     try {
       const { data } = await getMnemonics(finalQuery);
-      setMnemonics(data);
+      if (!filter.load) setMnemonics(data);
+      else setMnemonics([...mnemonics, ...data]);
+
       if (data.length === 0) setReachEnd(true);
     } catch (error) {
       console.error(error);
@@ -37,27 +40,48 @@ function Mnemonics({ query }) {
     }
   };
 
-  const getLoaded = async () => {
-    let { search: searchText } = parse(location.search) || {};
+  const loadMore = () => {
+    const { page: currentPage } = filter;
+    const newFilter = { ...filter, page: currentPage + 1, load: true };
+    setFilter(newFilter);
 
-    const filter = { text: searchText, page: page + 1 };
-    const finalQuery = { ...query, ...filter };
-
-    setPage(page + 1);
-    setLoading(true);
-
-    try {
-      const { data } = await getMnemonics(finalQuery);
-      setMnemonics([...mnemonics, ...data]);
-      if (data.length === 0) setReachEnd(true);
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setLoading(false);
-    }
+    history.push(
+      `?${stringify({ search: newFilter.search, page: newFilter.page })}`
+    );
   };
 
   const user = getMe();
+
+  useEffect(() => {
+    let { search = "", page = 1 } = parse(location.search) || {};
+    setFilter({ search, page: parseInt(page), load: false });
+
+    if (search) setValue(search);
+  }, []);
+
+  useEffect(() => {
+    if ("search" in filter) handleGet();
+  }, [filter]);
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+    const newFilter = { search: value, page: 1, load: false };
+    if (value) {
+      history.push(
+        `?${stringify({ search: newFilter.search, page: newFilter.page })}`
+      );
+    } else history.push("/");
+
+    setFilter(newFilter);
+  };
+
+  const revertSearch = () => {
+    const newFilter = { search: "", page: 1, load: false };
+    setValue("");
+    history.push("/");
+
+    setFilter(newFilter);
+  };
 
   const handleDelete = async (_id) => {
     try {
@@ -93,29 +117,6 @@ function Mnemonics({ query }) {
     }
   };
 
-  useEffect(() => {
-    let { search } = parse(location.search) || {};
-    if (search) setValue(search);
-    else search = "";
-
-    getAll(search);
-  }, []);
-
-  const handleSearch = (e) => {
-    e.preventDefault();
-    if (value) history.push(`?search=${value}`);
-    else history.push("/");
-
-    getAll(value);
-  };
-
-  const revertSearch = () => {
-    setValue("");
-    history.push("/");
-
-    getAll();
-  };
-
   return (
     <>
       <form
@@ -141,12 +142,7 @@ function Mnemonics({ query }) {
       {mnemonics.length > 0 && (
         <>
           {mnemonics.map((mnemonic, index) => (
-            <Mnemonic
-              key={index}
-              mnemonic={mnemonic}
-              onDelete={handleDelete}
-              onLike={handleLike}
-            />
+            <Mnemonic key={index} mnemonic={mnemonic} onLike={handleLike} />
           ))}
         </>
       )}
@@ -155,7 +151,9 @@ function Mnemonics({ query }) {
       <Loading loading={loading} />
 
       {!loading && !reachEnd && (
-        <Button onClick={() => getLoaded()}>Load More</Button>
+        <div className="text-center mt-5 mb-5">
+          <Button onClick={loadMore}>Load More</Button>
+        </div>
       )}
     </>
   );

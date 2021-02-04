@@ -15,7 +15,7 @@ router.get("/", async (req, res) => {
   let query = { isPublished: true };
 
   // search queries
-  const { author = "", page = 1, text = "" } = req.query;
+  const { author = "", page = 1, search = "" } = req.query;
   const size = 5;
   let skip = 0;
   if (page > 1) skip = (page - 1) * size;
@@ -30,7 +30,7 @@ router.get("/", async (req, res) => {
     }
   }
 
-  if (text) query.$text = { $search: text };
+  if (search) query.$text = { $search: search };
 
   // get mnemonics
   try {
@@ -105,6 +105,27 @@ router.post("/", auth, async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
+
+// router.put("/:id", auth, async (req, res) => {
+//   const { title, content, categories } = req.body;
+//   const {id: _id} = req.params;
+
+//   const error = validateData(req.body, mnemonicSchema);
+//   if (error) return res.status(400).json({ error: error.details[0].message });
+
+//   try {
+//     const mnemonic = await Mnemonic.findById(_id);
+//     mnemonic.title = title;
+//     mnemonic.content = content;
+//     mnemonic.categories = categories;
+//     await user.save();
+//     const token = createToken(user);
+//     res.send(token);
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ error: error.message });
+//   }
+// });
 
 router.put("/like", auth, async (req, res) => {
   const { _id: userId } = req.user;

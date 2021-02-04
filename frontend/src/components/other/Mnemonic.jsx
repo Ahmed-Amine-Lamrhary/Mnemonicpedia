@@ -5,7 +5,7 @@ import { getMe } from "../../api/me";
 import colors from "../../utility/colors";
 import Button from "./Button";
 
-function Mnemonic({ mnemonic, onDelete, onLike }) {
+function Mnemonic({ mnemonic, onLike }) {
   const { _id, title, content, author, likes } = mnemonic;
 
   if (!_id) return null;
@@ -13,13 +13,33 @@ function Mnemonic({ mnemonic, onDelete, onLike }) {
 
   return (
     <div style={style.container} className="mnemonic">
-      <Link
-        style={style.report}
-        to={`/report-mnemonic/${_id}`}
-        className="report"
-      >
-        <i className="ri-flag-2-line"></i>
-      </Link>
+      <div style={style.options}>
+        <div>
+          <Link
+            style={{ ...style.icon, marginLeft: "0" }}
+            to={`/user/${author._id}`}
+          >
+            <i className="ri-user-line"></i>
+            <span style={style.author}>{author.fullname}</span>
+          </Link>
+        </div>
+
+        <div>
+          {user && user._id === author._id && (
+            <Link style={style.icon} to={`/edit/${_id}`} className="report">
+              <i className="ri-pencil-line"></i>
+            </Link>
+          )}
+
+          <Link
+            style={style.icon}
+            to={`/report-mnemonic/${_id}`}
+            className="report"
+          >
+            <i className="ri-flag-2-line"></i>
+          </Link>
+        </div>
+      </div>
 
       <h4 style={style.title}>
         <Link style={style.titleLink} to={`/${generateUrl(title)}/${_id}`}>
@@ -51,14 +71,6 @@ function Mnemonic({ mnemonic, onDelete, onLike }) {
           <i style={style.btnIcon} className="ri-share-forward-line"></i> Share
         </Button>
       </div>
-
-      {user && user._id === author._id && (
-        <Button bgColor="danger" onClick={() => onDelete(_id)}>
-          Delete
-        </Button>
-      )}
-
-      <Link to={`/user/${author._id}`}>{author.fullname}</Link>
     </div>
   );
 }
@@ -108,13 +120,31 @@ const style = {
     transition: "border 0.2s ease-in-out",
   },
   btnIcon: { fontSize: "15px", marginRight: "8px" },
-  report: {
-    position: "absolute",
-    top: "26px",
-    right: "40px",
+  options: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: "20px",
+    borderBottom: "1px solid",
+    borderColor: "rgb(241 241 241)",
+    paddingBottom: "8px",
+  },
+  icon: {
     color: "#919292",
     fontSize: "20px",
     textDecoration: "none",
+    marginLeft: "13px",
+    display: "inline-flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  author: {
+    fontSize: "15px",
+    fontWeight: 500,
+    textDecoration: "none",
+    justifyContent: "center",
+    alignItems: "center",
+    marginLeft: "6px",
   },
 };
 

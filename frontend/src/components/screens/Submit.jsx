@@ -1,18 +1,44 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Form from "../forms/Form";
 import FormGroup from "../forms/GroupForm";
 import Button from "../other/Button";
 import Editor from "../forms/Editor";
 import { getCategories } from "../../api/category";
-import { createMnemonic } from "../../api/mnemonic";
+import {
+  createMnemonic,
+  getMnemonic,
+  updateMnemonic,
+} from "../../api/mnemonic";
 import GroupFormDropdown from "../forms/GroupFormDropdown";
 
-function Submit(props) {
+function Submit({ match, history }) {
+  const [operation, setOperation] = useState("create");
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [category, setCategory] = useState("");
   const [categories, setCategories] = useState([]);
   const [selectedCategories, setSelectedCategories] = useState([]);
+
+  useEffect(() => {
+    if (match.params.id) {
+      setOperation("edit");
+      handleGet();
+    }
+  }, []);
+
+  const handleGet = async () => {
+    try {
+      const {
+        data: { title, content, categories },
+      } = await getMnemonic(match.params.id);
+      setTitle(title);
+      setContent(content);
+      setCategories(categories);
+    } catch (error) {
+      console.log(error);
+      history.push("/notFound");
+    }
+  };
 
   const handleGetCategories = async (searched) => {
     setCategory(searched);
@@ -42,7 +68,15 @@ function Submit(props) {
   };
 
   const handleSubmit = async () => {
-    await createMnemonic({ title, content, categories: selectedCategories });
+    if (operation === "create")
+      await createMnemonic({ title, content, categories: selectedCategories });
+    else
+      await updateMnemonic({
+        _id: match.params.id,
+        title,
+        content,
+        categories: selectedCategories,
+      });
   };
 
   return (
@@ -70,7 +104,7 @@ function Submit(props) {
         />
 
         <br />
-        <Button type="submit">Submit</Button>
+        <Button type="submit">{operation}</Button>
       </Form>
     </div>
   );

@@ -13,9 +13,9 @@ const deleteMnemonic = async (_id) => {
 };
 
 const getMnemonics = async (query) => {
-  const { author = "", page = 1, text = "" } = query || {};
+  const { author = "", page = 1, search = "" } = query || {};
   const response = await axios.get(
-    `${config.api}/${resource}?author=${author}&page=${page}&text=${text}`
+    `${config.api}/${resource}?author=${author}&page=${page}&search=${search}`
   );
   return response;
 };
@@ -42,6 +42,15 @@ const createMnemonic = async ({ title, content, categories }) => {
   return response;
 };
 
+const updateMnemonic = async ({ _id, title, content, categories }) => {
+  const response = await axios.put(`${config.api}/${resource}/${_id}`, {
+    title,
+    content,
+    categories,
+  });
+  return response;
+};
+
 const reportMnemonic = async ({ _id, title, content }) => {
   const response = await axios.post(`${config.api}/${resource}/report/${_id}`, {
     title,
@@ -56,5 +65,6 @@ export {
   getMnemonic,
   likeMnemonic,
   createMnemonic,
+  updateMnemonic,
   reportMnemonic,
 };
