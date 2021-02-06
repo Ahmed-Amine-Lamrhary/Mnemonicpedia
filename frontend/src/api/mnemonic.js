@@ -4,11 +4,7 @@ import config from "../utility/config";
 const resource = "mnemonic";
 
 const deleteMnemonic = async (_id) => {
-  const response = await axios.delete(`${config.api}/${resource}`, {
-    data: {
-      _id,
-    },
-  });
+  const response = await axios.delete(`${config.api}/${resource}/${_id}`);
   return response;
 };
 

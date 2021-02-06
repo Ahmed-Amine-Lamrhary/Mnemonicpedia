@@ -22,16 +22,16 @@ router.post("/", async (req, res) => {
 
     const passwordValid = await bcrypt.compare(password, user.password);
     if (!passwordValid) return res.status(404).json({ error: message });
+
+    // create token
+    const token = createToken(user, keepLogin);
+
+    // send token
+    res.json(token);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: error.message });
   }
-
-  // create token
-  const token = createToken(user, keepLogin);
-
-  // send token
-  res.send(token);
 });
 
 module.exports = router;

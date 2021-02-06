@@ -18,7 +18,9 @@ const deleteMe = async ({ email }, history) => {
 };
 
 const updateMe = async ({ fullname, username, email, password, password2 }) => {
-  const { data: token } = await axios.put(`${config.api}/${resource}`, {
+  const {
+    data: { token },
+  } = await axios.put(`${config.api}/${resource}`, {
     fullname,
     username,
     email,

@@ -5,7 +5,7 @@ import Button from "./Button";
 import Mnemonic from "./Mnemonic";
 import Nothing from "./Nothing";
 import Loading from "./Loading";
-import { useHistory, useLocation } from "react-router-dom";
+import { useHistory, useLocation, useRouteMatch } from "react-router-dom";
 import { parse, stringify } from "query-string";
 
 function Mnemonics({ query }) {
@@ -17,6 +17,7 @@ function Mnemonics({ query }) {
 
   const history = useHistory();
   const location = useLocation();
+  const match = useRouteMatch();
 
   const handleGet = async () => {
     const finalQuery = { ...query, ...filter };
@@ -53,15 +54,15 @@ function Mnemonics({ query }) {
   const user = getMe();
 
   useEffect(() => {
+    if ("search" in filter) handleGet();
+  }, [filter]);
+
+  useEffect(() => {
     let { search = "", page = 1 } = parse(location.search) || {};
     setFilter({ search, page: parseInt(page), load: false });
 
     if (search) setValue(search);
-  }, []);
-
-  useEffect(() => {
-    if ("search" in filter) handleGet();
-  }, [filter]);
+  }, [location]);
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -70,7 +71,7 @@ function Mnemonics({ query }) {
       history.push(
         `?${stringify({ search: newFilter.search, page: newFilter.page })}`
       );
-    } else history.push("/");
+    } else history.push(match.url);
 
     setFilter(newFilter);
   };
@@ -78,7 +79,7 @@ function Mnemonics({ query }) {
   const revertSearch = () => {
     const newFilter = { search: "", page: 1, load: false };
     setValue("");
-    history.push("/");
+    history.push(match.url);
 
     setFilter(newFilter);
   };

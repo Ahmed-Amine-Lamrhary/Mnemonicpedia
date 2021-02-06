@@ -106,26 +106,38 @@ router.post("/", auth, async (req, res) => {
   }
 });
 
-// router.put("/:id", auth, async (req, res) => {
-//   const { title, content, categories } = req.body;
-//   const {id: _id} = req.params;
+router.put("/:id", auth, async (req, res) => {
+  // validate data
+  const { title, content, categories } = req.body;
+  const { id: mnemonicId } = req.params;
 
-//   const error = validateData(req.body, mnemonicSchema);
-//   if (error) return res.status(400).json({ error: error.details[0].message });
+  const error = validateData(req.body, mnemonicSchema);
+  if (error) return res.status(400).json({ error: error.details[0].message });
 
-//   try {
-//     const mnemonic = await Mnemonic.findById(_id);
-//     mnemonic.title = title;
-//     mnemonic.content = content;
-//     mnemonic.categories = categories;
-//     await user.save();
-//     const token = createToken(user);
-//     res.send(token);
-//   } catch (error) {
-//     console.error(error);
-//     res.status(500).json({ error: error.message });
-//   }
-// });
+  // id is valid
+  if (!ObjectId.isValid(mnemonicId))
+    return res.status(400).json({ error: "Id is not valid" });
+
+  // update
+  try {
+    // user is the owner of this mnemonic
+    const mnemonic = await Mnemonic.findById(mnemonicId);
+
+    if (!mnemonic.author.equals(req.user._id))
+      return res
+        .status(401)
+        .json({ error: "You are not authorized to update this mnemonic" });
+
+    mnemonic.title = title;
+    mnemonic.content = content;
+    mnemonic.categories = categories;
+    await mnemonic.save();
+    res.json(mnemonic);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: error.message });
+  }
+});
 
 router.put("/like", auth, async (req, res) => {
   const { _id: userId } = req.user;
@@ -149,22 +161,23 @@ router.put("/like", auth, async (req, res) => {
   }
 });
 
-router.delete("/", auth, async (req, res) => {
-  const { _id } = req.body;
-  if (!_id) return res.status(400).json({ error: "No id was given" });
-
-  const { author } = await Mnemonic.findById(_id).select("author -_id");
-
-  if (!author.equals(req.user._id))
-    return res
-      .status(401)
-      .json({ error: "You are not authorized to delete this mnemonic" });
+router.delete("/:id", auth, async (req, res) => {
+  const { id: mnemonicId } = req.params;
 
   try {
-    await Mnemonic.deleteOne({ _id });
+    const { author } = await Mnemonic.findById(mnemonicId).select(
+      "author -_id"
+    );
+
+    if (!author.equals(req.user._id))
+      return res
+        .status(401)
+        .json({ error: "You are not authorized to delete this mnemonic" });
+
+    await Mnemonic.deleteOne({ _id: mnemonicId });
     res.json({
       mnemonic: {
-        _id,
+        _id: mnemonicId,
       },
     });
   } catch (error) {

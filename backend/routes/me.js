@@ -61,7 +61,7 @@ router.put("/", auth, async (req, res) => {
     if (password) user.password = await encryptPassword(password);
     await user.save();
     const token = createToken(user);
-    res.send(token);
+    res.json({ token, message: "Your changes were made successully" });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: error.message });

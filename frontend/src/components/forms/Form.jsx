@@ -1,38 +1,17 @@
-import React, { useEffect, useState } from "react";
-import Alert from "./Alert";
+import React, { useState } from "react";
 import Loading from "./../other/Loading";
 
-function Form({ onSubmit, location, children }) {
-  const [error, setError] = useState("");
+function Form({ onSubmit, children }) {
   const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState("");
-
-  useEffect(() => {
-    setSuccess("");
-    setError("");
-
-    if (location) {
-      if (location.state) {
-        const { message } = location.state;
-        if (message) {
-          if (message.type === "success") setSuccess(message.value);
-          else setError(message.value);
-        }
-      }
-    }
-  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    setError("");
     setLoading(true);
 
     try {
       await onSubmit();
     } catch (error) {
-      console.error(error);
-      setError(error.response.data.error);
     } finally {
       setLoading(false);
     }
@@ -41,8 +20,6 @@ function Form({ onSubmit, location, children }) {
   return (
     <>
       <Loading loading={loading} />
-      <Alert message={error} type="danger" />
-      <Alert message={success} type="success" />
 
       <form onSubmit={handleSubmit}>{children}</form>
     </>

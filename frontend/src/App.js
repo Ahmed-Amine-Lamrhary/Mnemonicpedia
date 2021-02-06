@@ -16,16 +16,47 @@ import Navbar from "./components/other/Navbar";
 import axios from "axios";
 import { getToken } from "./api/me";
 import MeScreen from "./components/screens/MeScreen";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
-function App({ history }) {
+function App({ history, location }) {
+  const toastConfig = {
+    position: "top-center",
+    autoClose: 5000,
+    hideProgressBar: true,
+    draggable: false,
+  };
+
+  const axiosSuccess = (response) => {
+    if (response.data.message)
+      toast.success(response.data.message, toastConfig);
+  };
+  const axiosError = (error) => {
+    toast.error(error.response.data.error, toastConfig);
+    console.error(error);
+  };
+
+  // Add a request interceptor
+  // axios.interceptors.request.use(axiosSuccess, axiosError);
+
+  // Add a response interceptor
+  axios.interceptors.response.use(axiosSuccess, axiosError);
+
   axios.defaults.headers.common["x-auth-token"] = getToken();
 
   useEffect(() => {
+    if (location) {
+      const { message } = location.state || {};
+      if (message) toast.info(message.value, toastConfig);
+    }
+
     isStillAuthenticated(history);
   });
 
   return (
     <>
+      <ToastContainer />
+
       <Navbar />
       <div className="content">
         <Switch>
