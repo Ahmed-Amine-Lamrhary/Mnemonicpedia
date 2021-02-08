@@ -1,0 +1,13 @@
+.button {
+  cursor: pointer;
+  border: 0;
+  font-size: 15px;
+  font-weight: 400;
+  border-radius: 3px;
+  padding: 12px 20px;
+  font-family: inherit;
+  box-shadow: 0 3px 10px #eaf2fd;
+  transition: all 0.2s ease-in-out;
+  text-decoration: none;
+  display: inline-block;
+}

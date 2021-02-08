@@ -5,20 +5,23 @@ const router = express.Router();
 const ObjectId = require("mongoose").Types.ObjectId;
 const ReportMnemonic = require("../models/ReportMnemonic");
 const User = require("../models/User");
+const Category = require("../models/Category");
 const {
   mnemonicSchema,
   reportMnemonicSchema,
   validateData,
 } = require("../config/validation");
 
+const { getAll, getItem } = require("../middlewares/crud");
+
 router.get("/", async (req, res) => {
   let query = { isPublished: true };
 
   // search queries
   const { author = "", page = 1, search = "" } = req.query;
-  const size = 5;
+  const limit = 5;
   let skip = 0;
-  if (page > 1) skip = (page - 1) * size;
+  if (page > 1) skip = (page - 1) * limit;
 
   if (author && ObjectId.isValid(author)) {
     try {
@@ -33,73 +36,48 @@ router.get("/", async (req, res) => {
   if (search) query.$text = { $search: search };
 
   // get mnemonics
-  try {
-    let mnemonics = await Mnemonic.find(query)
-      .skip(skip)
-      .limit(size)
-      .sort("-dateCreated");
-
-    for (let i = 0; i < mnemonics.length; i++) {
-      const mnemonic = mnemonics[i];
-      const user = await User.findById(mnemonic.author).select("-password");
-      mnemonic.author = user;
-    }
-
-    res.json(mnemonics);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Internal Server Error" });
-  }
+  getAll(
+    Mnemonic,
+    { query, select: "", skip, limit, sort: "-dateCreated" },
+    res,
+    [
+      { RModel: User, field: "author", rselect: "-password" },
+      { RModel: Category, field: "categories" },
+    ]
+  );
 });
 
 router.get("/:id", async (req, res) => {
-  const { id } = req.params;
-
-  // check if id is valid
-  if (!ObjectId.isValid(id))
-    return res.status(400).json({ error: "Id is not valid" });
-
-  // check if mnemonic exists
-  try {
-    const mnemonic = await Mnemonic.findOne({ _id: id, isPublished: true });
-    if (!mnemonic)
-      return res.status(404).json({ error: "Mnemonic does not exist" });
-
-    res.json(mnemonic);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: error.message });
-  }
+  getItem(Mnemonic, req, res, { isPublished: true }, "", [
+    { RModel: User, field: "author", rselect: "-password" },
+    { RModel: Category, field: "categories" },
+  ]);
 });
 
 router.post("/", auth, async (req, res) => {
-  const { title, content, categories } = req.body;
-
-  const error = validateData(req.body, mnemonicSchema);
-  if (error) return res.status(400).json({ error: error.details[0].message });
-
-  // duplicated categories
-  const cateogriesList = [];
-  categories.map((category) => {
-    if (!cateogriesList.some(({ _id }) => _id === category._id))
-      cateogriesList.push(category);
-  });
+  validateData(req, res, mnemonicSchema);
 
   try {
-    const newMnemonic = new Mnemonic({
-      title,
-      content,
-      author: req.user._id,
+    // duplicated categories
+    const cateogriesList = [];
+    req.body.categories.map((category) => {
+      // validate categories
+      // const c = await Category.findById(category._id);
+      // if (!c) return res.status(400).json({ error: "Category doesn't exist" });
+
+      if (!cateogriesList.some(({ _id }) => _id === category._id))
+        cateogriesList.push(category);
+    });
+
+    req.body = {
+      ...req.body,
       categories: cateogriesList,
-    });
+      author: req.user._id,
+    };
+
+    const newMnemonic = new Mnemonic(req.body);
     await newMnemonic.save();
-    res.json({
-      mnemonic: {
-        id: newMnemonic._id,
-        title,
-        content,
-      },
-    });
+    res.json(newMnemonic);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: error.message });
@@ -111,8 +89,7 @@ router.put("/:id", auth, async (req, res) => {
   const { title, content, categories } = req.body;
   const { id: mnemonicId } = req.params;
 
-  const error = validateData(req.body, mnemonicSchema);
-  if (error) return res.status(400).json({ error: error.details[0].message });
+  validateData(req, res, mnemonicSchema);
 
   // id is valid
   if (!ObjectId.isValid(mnemonicId))
@@ -131,6 +108,7 @@ router.put("/:id", auth, async (req, res) => {
     mnemonic.title = title;
     mnemonic.content = content;
     mnemonic.categories = categories;
+    mnemonic.isPublished = true;
     await mnemonic.save();
     res.json(mnemonic);
   } catch (error) {
@@ -139,11 +117,9 @@ router.put("/:id", auth, async (req, res) => {
   }
 });
 
-router.put("/like", auth, async (req, res) => {
+router.put("/like/:id", auth, async (req, res) => {
   const { _id: userId } = req.user;
-  const {
-    data: { _id: mnemonicId },
-  } = req.body;
+  const { id: mnemonicId } = req.params;
 
   try {
     let mnemonic = await Mnemonic.findById(mnemonicId);
@@ -164,11 +140,13 @@ router.put("/like", auth, async (req, res) => {
 router.delete("/:id", auth, async (req, res) => {
   const { id: mnemonicId } = req.params;
 
+  if (!ObjectId.isValid(mnemonicId))
+    return res.status(400).json({ error: "Id is not valid" });
+
   try {
     const { author } = await Mnemonic.findById(mnemonicId).select(
       "author -_id"
     );
-
     if (!author.equals(req.user._id))
       return res
         .status(401)
@@ -192,8 +170,7 @@ router.post("/report/:id", auth, async (req, res) => {
   const { _id: userId } = req.user;
 
   // validate data
-  const error = validateData(req.body, reportMnemonicSchema);
-  if (error) return res.status(400).json({ error: error.details[0].message });
+  validateData(req, res, reportMnemonicSchema);
 
   // is id given
   if (!mnemonicId) return res.status(400).json({ error: "No id was given" });

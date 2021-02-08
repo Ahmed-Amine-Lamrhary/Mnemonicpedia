@@ -1,12 +1,14 @@
 import React, { useEffect, useState } from "react";
 import { getMe } from "../../api/me";
-import { deleteMnemonic, getMnemonics, likeMnemonic } from "../../api/mnemonic";
+import { getMnemonics, likeMnemonic } from "../../api/mnemonic";
 import Button from "./Button";
 import Mnemonic from "./Mnemonic";
 import Nothing from "./Nothing";
 import Loading from "./Loading";
-import { useHistory, useLocation, useRouteMatch } from "react-router-dom";
+import { useHistory, useLocation } from "react-router-dom";
 import { parse, stringify } from "query-string";
+import generateUrl from "generate-url";
+import "../../assets/css/searchform.css";
 
 function Mnemonics({ query }) {
   const [mnemonics, setMnemonics] = useState([]);
@@ -17,12 +19,12 @@ function Mnemonics({ query }) {
 
   const history = useHistory();
   const location = useLocation();
-  const match = useRouteMatch();
 
   const handleGet = async () => {
     const finalQuery = { ...query, ...filter };
+    const { search, load } = filter;
 
-    if (!filter.load) {
+    if (!load) {
       setReachEnd(false);
       setMnemonics([]);
     }
@@ -30,14 +32,22 @@ function Mnemonics({ query }) {
 
     try {
       const { data } = await getMnemonics(finalQuery);
-      if (!filter.load) setMnemonics(data);
+      if (!load) setMnemonics(data);
       else setMnemonics([...mnemonics, ...data]);
+
+      history.push(
+        `?${stringify({
+          search: search !== "" ? generateUrl(search) : undefined,
+        })}`
+      );
 
       if (data.length === 0) setReachEnd(true);
     } catch (error) {
       console.error(error);
+      setReachEnd(true);
     } finally {
       setLoading(false);
+      if (load) window.scrollTo(0, document.body.scrollHeight);
     }
   };
 
@@ -45,74 +55,49 @@ function Mnemonics({ query }) {
     const { page: currentPage } = filter;
     const newFilter = { ...filter, page: currentPage + 1, load: true };
     setFilter(newFilter);
-
-    history.push(
-      `?${stringify({ search: newFilter.search, page: newFilter.page })}`
-    );
   };
 
   const user = getMe();
 
   useEffect(() => {
-    if ("search" in filter) handleGet();
+    if ("search" in filter) {
+      setValue(filter.search);
+      handleGet();
+    }
   }, [filter]);
 
   useEffect(() => {
     let { search = "", page = 1 } = parse(location.search) || {};
     setFilter({ search, page: parseInt(page), load: false });
-
-    if (search) setValue(search);
-  }, [location]);
+  }, []);
 
   const handleSearch = (e) => {
     e.preventDefault();
     const newFilter = { search: value, page: 1, load: false };
-    if (value) {
-      history.push(
-        `?${stringify({ search: newFilter.search, page: newFilter.page })}`
-      );
-    } else history.push(match.url);
-
     setFilter(newFilter);
   };
 
   const revertSearch = () => {
     const newFilter = { search: "", page: 1, load: false };
-    setValue("");
-    history.push(match.url);
-
     setFilter(newFilter);
   };
 
-  const handleDelete = async (_id) => {
-    try {
-      await deleteMnemonic(_id);
-      let newMnemonics = [...mnemonics];
-      newMnemonics = newMnemonics.filter((mnemonic) => mnemonic._id !== _id);
-      setMnemonics(newMnemonics);
-    } catch (error) {
-      console.log(error.response.data.error);
-    }
-  };
-
-  const handleLike = async (mnemonic) => {
+  const handleLike = async (_id) => {
     // UI
     let newMnemonics = [...mnemonics];
-    let mnemonicLikes = newMnemonics.find((m) => m._id === mnemonic._id).likes;
+    let mnemonicLikes = newMnemonics.find((m) => m._id === _id).likes;
 
     if (!mnemonicLikes.includes(user._id)) mnemonicLikes.push(user._id);
     else
-      newMnemonics.find(
-        (m) => m._id === mnemonic._id
-      ).likes = newMnemonics
-        .find((m) => m._id === mnemonic._id)
+      newMnemonics.find((m) => m._id === _id).likes = newMnemonics
+        .find((m) => m._id === _id)
         .likes.filter((l) => l !== user._id);
 
     setMnemonics(newMnemonics);
 
     try {
       // change in db
-      await likeMnemonic(mnemonic);
+      await likeMnemonic(_id);
     } catch (error) {
       console.error(error);
     }
@@ -120,19 +105,15 @@ function Mnemonics({ query }) {
 
   return (
     <>
-      <form
-        style={style.container}
-        onSubmit={handleSearch}
-        className="search-bar"
-      >
+      <form onSubmit={handleSearch} className="searchform">
         <input
-          style={style.input}
+          className="input"
           type="text"
           placeholder="Search"
           value={value}
           onChange={(e) => setValue(e.target.value)}
         />
-        <i style={style.icon} className="ri-search-line"></i>
+        <i className="icon ri-search-line"></i>
         {value && (
           <button onClick={revertSearch} type="button">
             close
@@ -159,36 +140,5 @@ function Mnemonics({ query }) {
     </>
   );
 }
-
-const style = {
-  container: {
-    position: "relative",
-  },
-  icon: {
-    position: "absolute",
-    top: "10px",
-    left: "16px",
-    fontSize: "22px",
-    opacity: "0.5",
-  },
-  input: {
-    width: "100%",
-    border: "0",
-    background: "#f1f3f4",
-    fontFamily: "inherit",
-    fontSize: "15px",
-    fontWeight: "500",
-    color: "#707070",
-    padding: "0 50px",
-    borderRadius: "7px",
-    transition: "all 0.2s ease-in-out",
-    boxSizing: "border-box",
-    height: "52px",
-  },
-  inputFocus: {
-    boxShadow: "0 3px 6px rgba(0, 0, 0, 0.1)",
-    background: "white",
-  },
-};
 
 export default Mnemonics;

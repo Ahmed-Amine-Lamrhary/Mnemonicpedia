@@ -1,54 +1,14 @@
 const express = require("express");
 const router = express.Router();
 const User = require("../models/User");
-const bcrypt = require("bcrypt");
 const auth = require("../middlewares/auth");
 const { createToken } = require("../config/jwt");
-const {
-  registerSchema,
-  updateMeSchema,
-  validateData,
-} = require("../config/validation");
-
-router.post("/", async (req, res) => {
-  const { fullname, username, email, password } = req.body;
-
-  const error = validateData(req.body, registerSchema);
-  if (error) return res.status(400).json({ error: error.details[0].message });
-
-  try {
-    // check if user already exists
-    const user = await User.findOne({
-      $or: [{ email }, { username }],
-    });
-
-    if (user)
-      return res
-        .status(400)
-        .json({ error: "Username or email already exists" });
-
-    // register
-    const newUser = await new User({ fullname, username, email, password });
-    newUser.password = await encryptPassword(password);
-    await newUser.save();
-    res.json({
-      user: {
-        fullname,
-        email,
-        username,
-      },
-    });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: error.message });
-  }
-});
+const { updateMeSchema, validateData } = require("../config/validation");
 
 router.put("/", auth, async (req, res) => {
   const { fullname, username, email, password } = req.body;
 
-  const error = validateData(req.body, updateMeSchema);
-  if (error) return res.status(400).json({ error: error.details[0].message });
+  validateData(req, res, updateMeSchema);
 
   try {
     if (!fullname && !username && !email && !password)
@@ -83,10 +43,5 @@ router.delete("/", auth, async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
-
-const encryptPassword = async (password) => {
-  const salt = await bcrypt.genSalt(10);
-  return await bcrypt.hash(password, salt);
-};
 
 module.exports = router;

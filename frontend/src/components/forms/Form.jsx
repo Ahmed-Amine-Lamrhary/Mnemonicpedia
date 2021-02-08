@@ -12,6 +12,7 @@ function Form({ onSubmit, children }) {
     try {
       await onSubmit();
     } catch (error) {
+      console.log(error);
     } finally {
       setLoading(false);
     }

@@ -1,0 +1,8 @@
+.logo > a {
+  font-size: 17px;
+  color: black;
+  display: inline-block;
+  text-decoration: none;
+  text-transform: uppercase;
+  font-weight: 700;
+}

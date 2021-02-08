@@ -5,6 +5,8 @@ const router = express.Router();
 const ObjectId = require("mongoose").Types.ObjectId;
 const { categorySchema, validateData } = require("../config/validation");
 
+const { getAll } = require("../middlewares/crud");
+
 router.get("/", async (req, res) => {
   let query = {};
 
@@ -12,44 +14,31 @@ router.get("/", async (req, res) => {
   const { text = "", exclude } = req.query;
   if (text) query.$text = { $search: text };
 
-  const excludeList = JSON.parse(exclude);
-  if (excludeList.length > 0)
-    query._id = {
-      $nin: excludeList.map((categoryId) => {
-        if (ObjectId.isValid(categoryId)) return ObjectId(categoryId);
-      }),
-    };
-
-  try {
-    const categories = await Category.find(query).select("name");
-    res.json(categories);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: error.message });
+  if (exclude) {
+    const excludeList = JSON.parse(exclude);
+    if (excludeList.length > 0)
+      query._id = {
+        $nin: excludeList.map((categoryId) => {
+          if (ObjectId.isValid(categoryId)) return ObjectId(categoryId);
+        }),
+      };
   }
+
+  getAll(Category, { query, select: "name" }, res);
 });
 
 router.post("/", auth, async (req, res) => {
-  const { name } = req.body;
-
-  const error = validateData(req.body, categorySchema);
-  if (error) return res.status(400).json({ error: error.details[0].message });
+  validateData(req, res, categorySchema);
 
   try {
+    const { name } = req.body;
     const category = await Category.findOne({ name });
     if (category)
       return res.status(400).json({ error: "Category name already exists" });
 
-    const newCategory = new Category({
-      name,
-    });
+    const newCategory = new Category(req.body);
     await newCategory.save();
-    res.json({
-      category: {
-        id: newCategory._id,
-        name,
-      },
-    });
+    res.json(newCategory);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: error.message });

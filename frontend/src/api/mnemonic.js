@@ -21,11 +21,9 @@ const getMnemonic = async (_id) => {
   return response;
 };
 
-const likeMnemonic = async (mnemonic) => {
+const likeMnemonic = async (_id) => {
   // change in db
-  const response = await axios.put(`${config.api}/${resource}/like`, {
-    data: { _id: mnemonic._id },
-  });
+  const response = await axios.put(`${config.api}/${resource}/like/${_id}`);
   return response;
 };
 

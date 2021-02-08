@@ -1,5 +1,5 @@
 import React from "react";
-import FormGroup from "./GroupForm";
+import FormGroup from "./FormGroup";
 
 function GroupFormDropdown({
   label,
@@ -11,9 +11,8 @@ function GroupFormDropdown({
 }) {
   return (
     <>
-      {selected.map((item) => (
-        <span key={item._id}>{item.name}</span>
-      ))}
+      {selected &&
+        selected.map((item) => <span key={item._id}>{item.name}</span>)}
 
       <FormGroup type="text" value={value} label={label} onChange={onChange} />
       {items.map((item) => (

@@ -1,0 +1,28 @@
+.searchform {
+  position: relative;
+}
+.searchform .icon {
+  position: absolute;
+  top: 10px;
+  left: 16px;
+  font-size: 22px;
+  opacity: 0.5;
+}
+.searchform .input {
+  width: 100%;
+  border: 0;
+  background: #f1f3f4;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 500;
+  color: #707070;
+  padding: 0 50px;
+  border-radius: 7px;
+  transition: all 0.2s ease-in-out;
+  box-sizing: border-box;
+  height: 52px;
+}
+.searchform .input:focus {
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+  background: white;
+}

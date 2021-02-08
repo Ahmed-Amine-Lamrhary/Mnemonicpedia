@@ -1,11 +1,12 @@
 import React, { useState } from "react";
 import Form from "../forms/Form";
-import FormGroup from "../forms/GroupForm";
+import FormGroup from "../forms/FormGroup";
 import MessageBox from "../other/MessageBox";
 import { Route, Switch } from "react-router-dom";
 import Button from "../other/Button";
 import Navs from "../other/Navs";
-import { getMe, updateMe, deleteMe, logout } from "../../api/me";
+import { getMe, updateMe, deleteMe } from "../../api/me";
+import { logout } from "../../api/auth";
 import Mnemonics from "../other/Mnemonics";
 
 function MeScreen({ history, match }) {
@@ -19,20 +20,16 @@ function MeScreen({ history, match }) {
   const [newPassword2, setNewPassword2] = useState("");
 
   const handleUpdate = async () => {
-    try {
-      await updateMe(
-        {
-          fullname: newFullname,
-          username: newUsername,
-          email: newEmail,
-          password: newPassword,
-          password2: newPassword2,
-        },
-        history
-      );
-    } catch (error) {
-      console.error(error);
-    }
+    await updateMe(
+      {
+        fullname: newFullname,
+        username: newUsername,
+        email: newEmail,
+        password: newPassword,
+        password2: newPassword2,
+      },
+      history
+    );
   };
 
   const handleDelete = async () => {

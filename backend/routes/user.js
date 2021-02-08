@@ -6,24 +6,15 @@ const ReportUser = require("../models/ReportUser");
 const auth = require("../middlewares/auth");
 const { reportUserSchema, validateData } = require("../config/validation");
 
-router.get("/:id", async (req, res) => {
-  const { id } = req.params;
+const { getAll, getItem } = require("../middlewares/crud");
 
-  // check if id is valid
-  if (!ObjectId.isValid(id))
-    return res.status(400).json({ error: "Id is not valid" });
+router.get("/", async (req, res) =>
+  getAll(User, { query: {}, select: "-password" }, res)
+);
 
-  // check if user exists
-  try {
-    const user = await User.findById(id).select("-password");
-    if (!user) return res.status(404).json({ error: "User does not exist" });
-
-    res.json(user);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: error.message });
-  }
-});
+router.get("/:id", async (req, res) =>
+  getItem(User, req, res, {}, "-password")
+);
 
 router.post("/report/:id", auth, async (req, res) => {
   const { title, content } = req.body;
@@ -31,8 +22,7 @@ router.post("/report/:id", auth, async (req, res) => {
   const { _id: userId } = req.user;
 
   // validate data
-  const error = validateData(req.body, reportUserSchema);
-  if (error) return res.status(400).json({ error: error.details[0].message });
+  validateData(req, res, reportUserSchema);
 
   // is id given
   if (!reportedUserId)

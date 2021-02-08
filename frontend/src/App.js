@@ -1,6 +1,5 @@
 import { useEffect } from "react";
 import { Switch, Route, Redirect, withRouter } from "react-router-dom";
-import { isStillAuthenticated } from "./api/me";
 import User from "./components/screens/UserScreen";
 import Home from "./components/screens/HomeScreen";
 import Login from "./components/screens/LoginScreen";
@@ -14,7 +13,7 @@ import PrivateRoute from "./components/routes/PrivateRoute";
 import PublicRoute from "./components/routes/PublicRoute";
 import Navbar from "./components/other/Navbar";
 import axios from "axios";
-import { getToken } from "./api/me";
+import { getToken, isStillAuthenticated } from "./api/auth";
 import MeScreen from "./components/screens/MeScreen";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -30,28 +29,27 @@ function App({ history, location }) {
   const axiosSuccess = (response) => {
     if (response.data.message)
       toast.success(response.data.message, toastConfig);
+
+    return response;
   };
   const axiosError = (error) => {
-    toast.error(error.response.data.error, toastConfig);
-    console.error(error);
+    if (error.response) toast.error(error.response.data.error, toastConfig);
+    else toast.error("Network error", toastConfig);
+
+    return Promise.reject(error);
   };
 
-  // Add a request interceptor
-  // axios.interceptors.request.use(axiosSuccess, axiosError);
-
-  // Add a response interceptor
+  axios.defaults.headers.common["x-auth-token"] = getToken();
   axios.interceptors.response.use(axiosSuccess, axiosError);
 
-  axios.defaults.headers.common["x-auth-token"] = getToken();
+  useEffect(() => isStillAuthenticated(history));
 
   useEffect(() => {
-    if (location) {
-      const { message } = location.state || {};
+    if (location && location.state) {
+      const { message } = location.state;
       if (message) toast.info(message.value, toastConfig);
     }
-
-    isStillAuthenticated(history);
-  });
+  }, [location]);
 
   return (
     <>

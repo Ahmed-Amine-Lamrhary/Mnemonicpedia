@@ -7,7 +7,15 @@ function PrivateRoute({ component: Component, ...rest }) {
     <Route
       {...rest}
       render={(props) => {
-        if (!getMe()) return <Redirect to="/login" />;
+        if (!getMe())
+          return (
+            <Redirect
+              to={{
+                pathname: "/login",
+                state: { from: props.location },
+              }}
+            />
+          );
         return <Component {...props} />;
       }}
     />

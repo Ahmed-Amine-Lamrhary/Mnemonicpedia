@@ -7,7 +7,7 @@ function PublicRoute({ component: Component, ...rest }) {
     <Route
       {...rest}
       render={(props) => {
-        if (getMe()) return <Redirect to="/dashboard" />;
+        if (getMe()) return <Redirect to="/me" />;
         return <Component {...props} />;
       }}
     />

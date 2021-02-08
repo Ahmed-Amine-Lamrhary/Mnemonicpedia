@@ -1,5 +1,6 @@
 import React from "react";
 import colors from "../../utility/colors";
+import "../../assets/css/formcheck.css";
 
 function FormCheck({ label, id, checked, onChange }) {
   return (
@@ -11,20 +12,15 @@ function FormCheck({ label, id, checked, onChange }) {
         className="form-check-input"
         id={id}
       />
-      <label style={style.label} className="form-check-label" htmlFor={id}>
+      <label
+        style={{ color: colors.primary }}
+        className="fromchecklabel form-check-label"
+        htmlFor={id}
+      >
         {label}
       </label>
     </div>
   );
 }
-
-const style = {
-  label: {
-    fontSize: "13px",
-    fontWeight: "500",
-    color: colors.primary,
-    cursor: "pointer",
-  },
-};
 
 export default FormCheck;

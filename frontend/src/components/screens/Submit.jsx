@@ -1,17 +1,21 @@
 import React, { useEffect, useState } from "react";
 import Form from "../forms/Form";
-import FormGroup from "../forms/GroupForm";
+import FormGroup from "../forms/FormGroup";
 import Button from "../other/Button";
 import Editor from "../forms/Editor";
 import { getCategories } from "../../api/category";
 import {
   createMnemonic,
+  deleteMnemonic,
   getMnemonic,
   updateMnemonic,
 } from "../../api/mnemonic";
 import GroupFormDropdown from "../forms/GroupFormDropdown";
+import MessageBox from "../other/MessageBox";
 
 function Submit({ match, history }) {
+  const [isMessageBox, setIsMessageBox] = useState(false);
+
   const [operation, setOperation] = useState("create");
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
@@ -33,7 +37,7 @@ function Submit({ match, history }) {
       } = await getMnemonic(match.params.id);
       setTitle(title);
       setContent(content);
-      setCategories(categories);
+      setSelectedCategories(categories);
     } catch (error) {
       console.log(error);
       history.push("/notFound");
@@ -68,19 +72,67 @@ function Submit({ match, history }) {
   };
 
   const handleSubmit = async () => {
-    if (operation === "create")
+    let value;
+    if (operation === "create") {
       await createMnemonic({ title, content, categories: selectedCategories });
-    else
+      value = "created";
+    } else {
       await updateMnemonic({
         _id: match.params.id,
         title,
         content,
         categories: selectedCategories,
       });
+      value = "edited";
+    }
+    history.push({
+      pathname: "/",
+      state: {
+        message: {
+          value: `Your mnemonic has been ${value} successfully. We will notify you once it is publlished.`,
+        },
+      },
+    });
+  };
+
+  const handleDelete = async () => {
+    try {
+      await deleteMnemonic(match.params.id);
+      history.push({
+        pathname: "/",
+        state: {
+          message: {
+            value: "Your mnemonic has been deleted successfully",
+          },
+        },
+      });
+    } catch (error) {
+      console.log(error.response.data.error);
+    } finally {
+      setIsMessageBox(false);
+    }
   };
 
   return (
     <div className="container">
+      <MessageBox
+        visible={isMessageBox}
+        onClose={() => setIsMessageBox(false)}
+        title="Are you sure you want to delete this mnemonic?"
+        buttons={[
+          {
+            text: "No",
+            bgColor: "primary",
+            onClick: () => setIsMessageBox(false),
+          },
+          {
+            text: "Yes",
+            bgColor: "danger",
+            onClick: () => handleDelete(),
+          },
+        ]}
+      />
+
       <Form onSubmit={handleSubmit}>
         <FormGroup
           type="text"
@@ -105,6 +157,11 @@ function Submit({ match, history }) {
 
         <br />
         <Button type="submit">{operation}</Button>
+        {operation === "edit" && (
+          <Button bgColor="danger" onClick={() => setIsMessageBox(true)}>
+            Delete
+          </Button>
+        )}
       </Form>
     </div>
   );

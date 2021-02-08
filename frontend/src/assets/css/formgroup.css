@@ -1,0 +1,20 @@
+.formgroup {
+  position: relative;
+  margin-bottom: 20px;
+}
+
+.formgroup .forminput {
+  border-radius: 3px;
+  border: 1px solid #d0d0d0;
+  padding: 14px 12px;
+  font-size: 14px;
+  transition: all 0.1s ease-in-out;
+  height: auto;
+  box-shadow: none;
+}
+
+.formgroup .forminput:focus {
+  border-color: #1a73e8;
+  border-width: 2px;
+  box-shadow: none;
+}

@@ -8,27 +8,6 @@ body {
   font-family: "Roboto", sans-serif;
 }
 
-/************************************** Screens *************************************************/
-/* Login and Register */
-.form-nav a.active:before {
-  content: "";
-  bottom: -8px;
-  left: 4px;
-  width: 48px;
-  height: 3px;
-  background-color: #1a73e8;
-  position: absolute;
-}
-
-/************************************** Components *************************************************/
-.modal {
-  display: block !important;
-}
-.dropdown-menu {
-  display: block !important;
-}
-
-/* Input Texts */
 ::-webkit-input-placeholder {
   color: rgba(0, 0, 0, 0.27);
 }
@@ -38,14 +17,8 @@ body {
 ::placeholder {
   color: rgba(0, 0, 0, 0.27);
 }
-input:focus {
-  border-color: #1a73e8;
-  border-width: 2px;
-  box-shadow: none;
-}
 
-/* Search */
-.search-bar input[type="text"]:focus {
-  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
-  background: white;
+/***************************************************************************************/
+.modal {
+  display: block !important;
 }

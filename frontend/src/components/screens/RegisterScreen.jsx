@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 import Form from "../forms/Form";
-import FormGroup from "../forms/GroupForm";
+import FormGroup from "../forms/FormGroup";
 import Button from "../other/Button";
 import FormNavigation from "../forms/FormNavigation";
-import { register } from "../../api/me";
+import { register } from "../../api/auth";
 
 function Register({ history, location }) {
   const [fullname, setFullname] = useState("");

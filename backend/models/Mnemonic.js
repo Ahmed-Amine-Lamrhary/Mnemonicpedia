@@ -15,7 +15,7 @@ const schema = mongoose.Schema({
     default: Date.now,
   },
   author: {
-    type: mongoose.Schema.ObjectId,
+    type: mongoose.Schema.Types.ObjectId,
     required: true,
     ref: "user",
   },
@@ -25,11 +25,12 @@ const schema = mongoose.Schema({
   },
   likes: {
     type: Array,
-    default: [mongoose.Schema.ObjectId],
+    default: [mongoose.Schema.Types.ObjectId],
     ref: "user",
   },
   categories: {
-    type: [mongoose.Schema.ObjectId],
+    type: Array,
+    default: [mongoose.Schema.Types.ObjectId],
     ref: "category",
   },
 });
