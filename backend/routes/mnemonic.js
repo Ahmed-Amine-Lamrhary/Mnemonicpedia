@@ -3,7 +3,6 @@ const Mnemonic = require("../models/Mnemonic");
 const auth = require("../middlewares/auth");
 const router = express.Router();
 const ObjectId = require("mongoose").Types.ObjectId;
-const ReportMnemonic = require("../models/ReportMnemonic");
 const User = require("../models/User");
 const Category = require("../models/Category");
 const {
@@ -56,22 +55,12 @@ router.get("/:id", async (req, res) => {
 
 router.post("/", auth, async (req, res) => {
   validateData(req, res, mnemonicSchema);
+  const categories = validateCategories(req, res);
 
   try {
-    // duplicated categories
-    const cateogriesList = [];
-    req.body.categories.map((category) => {
-      // validate categories
-      // const c = await Category.findById(category._id);
-      // if (!c) return res.status(400).json({ error: "Category doesn't exist" });
-
-      if (!cateogriesList.some(({ _id }) => _id === category._id))
-        cateogriesList.push(category);
-    });
-
     req.body = {
       ...req.body,
-      categories: cateogriesList,
+      categories,
       author: req.user._id,
     };
 
@@ -86,10 +75,11 @@ router.post("/", auth, async (req, res) => {
 
 router.put("/:id", auth, async (req, res) => {
   // validate data
-  const { title, content, categories } = req.body;
+  const { title, content } = req.body;
   const { id: mnemonicId } = req.params;
 
   validateData(req, res, mnemonicSchema);
+  const categories = validateCategories(req, res);
 
   // id is valid
   if (!ObjectId.isValid(mnemonicId))
@@ -97,9 +87,12 @@ router.put("/:id", auth, async (req, res) => {
 
   // update
   try {
-    // user is the owner of this mnemonic
+    // is mnemonic exists
     const mnemonic = await Mnemonic.findById(mnemonicId);
+    if (!mnemonic)
+      return res.status(400).json({ error: "Mnemonic does not exist" });
 
+    // user is the owner of this mnemonic
     if (!mnemonic.author.equals(req.user._id))
       return res
         .status(401)
@@ -117,33 +110,19 @@ router.put("/:id", auth, async (req, res) => {
   }
 });
 
-router.put("/like/:id", auth, async (req, res) => {
-  const { _id: userId } = req.user;
-  const { id: mnemonicId } = req.params;
-
-  try {
-    let mnemonic = await Mnemonic.findById(mnemonicId);
-
-    if (!mnemonic.likes.includes(userId)) mnemonic.likes.push(userId);
-    else mnemonic.likes = mnemonic.likes.filter((like) => like !== userId);
-
-    await mnemonic.save();
-    return res.json({
-      likes: mnemonic.likes,
-    });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: error.message });
-  }
-});
-
 router.delete("/:id", auth, async (req, res) => {
   const { id: mnemonicId } = req.params;
 
+  // is id valid
   if (!ObjectId.isValid(mnemonicId))
     return res.status(400).json({ error: "Id is not valid" });
 
   try {
+    // is mnemonic exists
+    const mnemonic = await Mnemonic.findById(mnemonicId);
+    if (!mnemonic)
+      return res.status(400).json({ error: "Mnemonic does not exist" });
+
     const { author } = await Mnemonic.findById(mnemonicId).select(
       "author -_id"
     );
@@ -164,40 +143,65 @@ router.delete("/:id", auth, async (req, res) => {
   }
 });
 
-router.post("/report/:id", auth, async (req, res) => {
-  const { title, content } = req.body;
-  const { id: mnemonicId } = req.params;
+router.put("/like/:id", auth, async (req, res) => {
   const { _id: userId } = req.user;
+  const { id: mnemonicId } = req.params;
 
-  // validate data
-  validateData(req, res, reportMnemonicSchema);
-
-  // is id given
-  if (!mnemonicId) return res.status(400).json({ error: "No id was given" });
+  // if mnemonic id is valid
+  if (!ObjectId.isValid(mnemonicId))
+    return res.status(400).json({ error: "Id is not valid" });
 
   try {
-    // check if mnemonic exists and doesn't belong to him
-    const mnemonic = await Mnemonic.findOne({
-      _id: mnemonicId,
-      isPublished: true,
-      author: { $ne: userId },
-    });
+    // is mnemonic exists
+    let mnemonic = await Mnemonic.findById(mnemonicId);
     if (!mnemonic)
-      return res.status(404).json({
-        error: "Mnemonic is not available or user is not allowed to report it.",
-      });
+      return res.status(400).json({ error: "Mnemonic does not exist" });
 
-    // report
-    const data = { mnemonic: mnemonicId, author: userId, title, content };
-    const reportMnemonic = new ReportMnemonic(data);
-    await reportMnemonic.save();
-    res.json({
-      reportMnemonic: data,
+    // if mnemonic exists
+
+    if (!mnemonic.likes.includes(userId)) mnemonic.likes.push(userId);
+    else mnemonic.likes = mnemonic.likes.filter((like) => like !== userId);
+
+    await mnemonic.save();
+    return res.json({
+      likes: mnemonic.likes,
     });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: error.message });
   }
 });
+
+// validate if cateogories exist and not duplicated
+const validateCategories = (req, res) => {
+  const { categories } = req.body;
+  const cateogriesList = [];
+
+  // get only not duplicated
+  categories.map((categoryId) => {
+    if (!cateogriesList.some((id) => id === categoryId))
+      cateogriesList.push(categoryId);
+  });
+
+  // validate if categories IDs are valid
+  cateogriesList.map((categoryId) => {
+    if (!ObjectId.isValid(categoryId))
+      return res.status(400).json({ error: "Categories are not valid" });
+  });
+
+  // validate if categories exist
+  // cateogriesList.map(async (categoryId) => {
+  //   try {
+  //     const category = await Category.findById(categoryId);
+  //     if (!category)
+  //       return res.status(400).json({ error: "Categories do not exist" });
+  //   } catch (error) {
+  //     console.error(error);
+  //     return res.status(500).json({ error: error.message });
+  //   }
+  // });
+
+  return cateogriesList;
+};
 
 module.exports = router;

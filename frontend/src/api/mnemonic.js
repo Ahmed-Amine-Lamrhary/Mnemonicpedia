@@ -45,14 +45,6 @@ const updateMnemonic = async ({ _id, title, content, categories }) => {
   return response;
 };
 
-const reportMnemonic = async ({ _id, title, content }) => {
-  const response = await axios.post(`${config.api}/${resource}/report/${_id}`, {
-    title,
-    content,
-  });
-  return response;
-};
-
 export {
   deleteMnemonic,
   getMnemonics,
@@ -60,5 +52,4 @@ export {
   likeMnemonic,
   createMnemonic,
   updateMnemonic,
-  reportMnemonic,
 };

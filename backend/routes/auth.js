@@ -14,8 +14,7 @@ router.post("/login", async (req, res) => {
   const { email, password, keepLogin } = req.body;
 
   // validation
-  const error = validateData(req.body, authSchema);
-  if (error) return res.status(400).json({ error: error.details[0].message });
+  validateData(req, res, authSchema);
 
   // check if email and password are valid
   let user;
@@ -43,8 +42,7 @@ router.post("/login", async (req, res) => {
 router.post("/register", async (req, res) => {
   const { fullname, username, email, password } = req.body;
 
-  const error = validateData(req.body, registerSchema);
-  if (error) return res.status(400).json({ error: error.details[0].message });
+  validateData(req, res, registerSchema);
 
   try {
     // check if user already exists

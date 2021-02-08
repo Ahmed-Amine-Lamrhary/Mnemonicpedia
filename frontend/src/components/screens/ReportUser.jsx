@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { getUser, reportUser } from "../../api/user";
+import { getUser } from "../../api/user";
+import { reportUser } from "../../api/report";
 import Form from "../forms/Form";
 import FormGroup from "../forms/FormGroup";
 import Button from "../other/Button";

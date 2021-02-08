@@ -5,6 +5,18 @@ const auth = require("../middlewares/auth");
 const { createToken } = require("../config/jwt");
 const { updateMeSchema, validateData } = require("../config/validation");
 
+router.get("/", auth, async (req, res) => {
+  const { _id: userId } = req.user;
+
+  try {
+    const user = await User.findById(userId);
+    res.json(user);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 router.put("/", auth, async (req, res) => {
   const { fullname, username, email, password } = req.body;
 

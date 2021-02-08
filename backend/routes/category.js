@@ -28,17 +28,42 @@ router.get("/", async (req, res) => {
 });
 
 router.post("/", auth, async (req, res) => {
+  const name = req.body.name.toLowerCase();
   validateData(req, res, categorySchema);
 
   try {
-    const { name } = req.body;
     const category = await Category.findOne({ name });
     if (category)
       return res.status(400).json({ error: "Category name already exists" });
 
-    const newCategory = new Category(req.body);
+    const newCategory = new Category({ name });
     await newCategory.save();
     res.json(newCategory);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+router.put("/:id", auth, async (req, res) => {
+  const name = req.body.name.toLowerCase();
+  const { id: categoryId } = req.params;
+
+  validateData(req, res, categorySchema);
+
+  // id is valid
+  if (!ObjectId.isValid(categoryId))
+    return res.status(400).json({ error: "Id is not valid" });
+
+  try {
+    let category = await Category.findOne({ name });
+    if (category)
+      return res.status(400).json({ error: "Category name already exists" });
+
+    category = await Category.finById(categoryId);
+    category.name = name;
+    await category.save();
+    res.json(category);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: error.message });

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { getMnemonic, reportMnemonic } from "../../api/mnemonic";
+import { getMnemonic } from "../../api/mnemonic";
+import { reportMnemonic } from "../../api/report";
 import Form from "../forms/Form";
 import FormGroup from "../forms/FormGroup";
 import Button from "../other/Button";

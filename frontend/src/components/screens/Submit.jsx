@@ -72,16 +72,17 @@ function Submit({ match, history }) {
   };
 
   const handleSubmit = async () => {
+    const categoriesIds = selectedCategories.map((category) => category._id);
     let value;
     if (operation === "create") {
-      await createMnemonic({ title, content, categories: selectedCategories });
+      await createMnemonic({ title, content, categories: categoriesIds });
       value = "created";
     } else {
       await updateMnemonic({
         _id: match.params.id,
         title,
         content,
-        categories: selectedCategories,
+        categories: categoriesIds,
       });
       value = "edited";
     }

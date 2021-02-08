@@ -7,6 +7,7 @@ const me = require("./routes/me");
 const user = require("./routes/user");
 const mnemonic = require("./routes/mnemonic");
 const category = require("./routes/category");
+const report = require("./routes/report");
 
 app.use(cors());
 app.use(express.json());
@@ -17,6 +18,7 @@ app.use("/me", me);
 app.use("/user", user);
 app.use("/mnemonic", mnemonic);
 app.use("/category", category);
+app.use("/report", report);
 
 mongoose
   .connect("mongodb://localhost/ourapp")

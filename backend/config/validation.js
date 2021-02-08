@@ -29,7 +29,7 @@ const updateMeSchema = Joi.object({
 const mnemonicSchema = Joi.object({
   title: Joi.string().min(5).max(100).required(),
   content: Joi.string().min(10).max(1000).required(),
-  categories: Joi.array().items(Joi.object()).allow(null),
+  categories: Joi.array().items(Joi.string()).allow(null),
 });
 
 const reportMnemonicSchema = Joi.object({
