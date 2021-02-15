@@ -2,12 +2,18 @@ const express = require("express");
 const router = express.Router();
 const bcrypt = require("bcrypt");
 const { createToken } = require("../config/jwt");
+const auth = require("../middlewares/auth");
 const User = require("../models/User");
 const {
   authSchema,
   registerSchema,
   validateData,
 } = require("../config/validation");
+
+const cookieOptions = {
+  httpOnly: true,
+  secure: false,
+};
 
 // LOGIN
 router.post("/login", async (req, res) => {
@@ -30,12 +36,17 @@ router.post("/login", async (req, res) => {
     // create token
     const token = createToken(user, keepLogin);
 
-    // send token
-    res.json(token);
+    // send in token httponly cookie
+    res.cookie("token", token, cookieOptions).json({ meId: user._id });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: error.message });
   }
+});
+
+// LOGOUT
+router.post("/logout", (req, res) => {
+  res.cookie("token", "deleted", cookieOptions).json("user logged out");
 });
 
 // REGISTER

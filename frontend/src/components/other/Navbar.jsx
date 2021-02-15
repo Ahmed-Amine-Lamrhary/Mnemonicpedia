@@ -1,11 +1,9 @@
 import React from "react";
-import { getMe } from "../../api/me";
+import { getMyId } from "../../api/me";
 import Button from "./Button";
 import Logo from "./Logo";
 
 function Navbar(props) {
-  const user = getMe();
-
   return (
     <>
       <nav className="navbar navbar-expand-lg navbar-absolute navbar-transparent">
@@ -15,7 +13,7 @@ function Navbar(props) {
           </div>
           <div className="collapse navbar-collapse" id="navigation">
             <ul className="navbar-nav ml-auto">
-              {!user && (
+              {!getMyId() && (
                 <>
                   <li className="input-group ml-2">
                     <Button to="/login">Login</Button>
@@ -26,7 +24,7 @@ function Navbar(props) {
                 </>
               )}
 
-              {user && (
+              {getMyId() && (
                 <>
                   <li className="input-group">
                     <Button to="/submit" bgColor="light">

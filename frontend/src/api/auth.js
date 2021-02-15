@@ -1,19 +1,20 @@
 import axios from "axios";
 import config from "../utility/config";
-import { getMe } from "./me";
 
 const resource = "auth";
-const key = "token";
 
 const login = async ({ email, password, keepLogin }, history, prevLocation) => {
-  const { data: token } = await axios.post(`${config.api}/auth/login`, {
+  const {
+    data: { meId },
+  } = await axios.post(`${config.api}/auth/login`, {
     email,
     password,
     keepLogin,
   });
 
-  // save user's token and redirect to dashboard
-  localStorage.setItem(key, token);
+  localStorage.setItem("meId", meId);
+
+  // redirect to dashboard
   if (!prevLocation) return history.replace("/");
   history.replace(prevLocation.pathname);
 };
@@ -44,8 +45,10 @@ const register = async (
   });
 };
 
-const logout = (history, message) => {
-  localStorage.removeItem(key);
+const logout = async (history, message) => {
+  await axios.post(`${config.api}/auth/logout`);
+
+  localStorage.removeItem("meId");
   history.push("/login", {
     message: {
       type: "error",
@@ -54,16 +57,4 @@ const logout = (history, message) => {
   });
 };
 
-const getToken = () => {
-  return localStorage.getItem(key);
-};
-
-const isStillAuthenticated = (history) => {
-  if (!getMe()) return;
-  const { exp } = getMe();
-  if (!exp) return;
-  const now = new Date().getTime() / 1000;
-  if (now >= exp) logout(history, "Your session is expired");
-};
-
-export { login, register, logout, isStillAuthenticated, getToken };
+export { login, register, logout };

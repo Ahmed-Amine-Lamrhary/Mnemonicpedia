@@ -5,11 +5,7 @@ const router = express.Router();
 const ObjectId = require("mongoose").Types.ObjectId;
 const User = require("../models/User");
 const Category = require("../models/Category");
-const {
-  mnemonicSchema,
-  reportMnemonicSchema,
-  validateData,
-} = require("../config/validation");
+const { mnemonicSchema, validateData } = require("../config/validation");
 
 const { getAll, getItem } = require("../middlewares/crud");
 

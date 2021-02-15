@@ -2,6 +2,7 @@ const express = require("express");
 const app = express();
 const mongoose = require("mongoose");
 const cors = require("cors");
+const cookieParser = require("cookie-parser");
 const auth = require("./routes/auth");
 const me = require("./routes/me");
 const user = require("./routes/user");
@@ -9,7 +10,8 @@ const mnemonic = require("./routes/mnemonic");
 const category = require("./routes/category");
 const report = require("./routes/report");
 
-app.use(cors());
+app.use(cors({ credentials: true, origin: "http://localhost:3000" }));
+app.use(cookieParser());
 app.use(express.json());
 
 // routes

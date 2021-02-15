@@ -1,21 +1,22 @@
 import axios from "axios";
 import config from "../utility/config";
-import { decode } from "jsonwebtoken";
-import { getToken, logout } from "./auth";
+import { logout } from "./auth";
 
 const resource = "me";
 const key = "token";
 
-const getMe = () => {
-  if (getToken()) return decode(getToken());
-  return null;
+const getMyId = () => {
+  return localStorage.getItem("meId");
 };
 
-const deleteMe = async ({ email }, history) => {
-  await axios.delete(`${config.api}/${resource}`, {
-    email,
-  });
-  logout(history, "Your account has been deleted successfully");
+const getMe = async () => {
+  const { data } = await axios.get(`${config.api}/${resource}`);
+  return data;
+};
+
+const deleteMe = async (history) => {
+  await axios.delete(`${config.api}/${resource}`);
+  await logout(history, "Your account has been deleted successfully");
 };
 
 const updateMe = async ({ fullname, username, email, password, password2 }) => {
@@ -32,4 +33,4 @@ const updateMe = async ({ fullname, username, email, password, password2 }) => {
   if (token) localStorage.setItem(key, token);
 };
 
-export { getMe, updateMe, deleteMe };
+export { getMe, updateMe, deleteMe, getMyId };

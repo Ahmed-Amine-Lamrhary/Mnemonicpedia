@@ -1,23 +1,42 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Form from "../forms/Form";
 import FormGroup from "../forms/FormGroup";
 import MessageBox from "../other/MessageBox";
 import { Route, Switch } from "react-router-dom";
 import Button from "../other/Button";
 import Navs from "../other/Navs";
-import { getMe, updateMe, deleteMe } from "../../api/me";
+import { getMe, updateMe, deleteMe, getMyId } from "../../api/me";
 import { logout } from "../../api/auth";
 import Mnemonics from "../other/Mnemonics";
 
-function MeScreen({ history, match }) {
-  const { _id, fullname, username, email } = getMe() || {};
-  const [isMessageBox, setIsMessageBox] = useState(false);
+function MeScreen({ history }) {
+  const _id = getMyId();
+  const [fullname, setFullname] = useState("");
+  const [username, setUsername] = useState("");
 
-  const [newFullname, setNewFullname] = useState(fullname);
-  const [newUsername, setNewUsername] = useState(username);
-  const [newEmail, setNewEmail] = useState(email);
+  const [isMessageBox, setIsMessageBox] = useState(false);
+  const [newFullname, setNewFullname] = useState("");
+  const [newUsername, setNewUsername] = useState("");
+  const [newEmail, setNewEmail] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [newPassword2, setNewPassword2] = useState("");
+
+  const handleGetMe = async () => {
+    try {
+      const { fullname, username, email } = await getMe();
+      setFullname(fullname);
+      setUsername(username);
+      setNewFullname(fullname);
+      setNewUsername(username);
+      setNewEmail(email);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  useEffect(() => {
+    handleGetMe();
+  }, []);
 
   const handleUpdate = async () => {
     await updateMe(
@@ -34,7 +53,7 @@ function MeScreen({ history, match }) {
 
   const handleDelete = async () => {
     try {
-      await deleteMe({ email }, history);
+      await deleteMe(history);
     } catch (error) {
       console.error(error);
     }
@@ -85,6 +104,14 @@ function MeScreen({ history, match }) {
     </>
   );
 
+  const handleLogout = async () => {
+    try {
+      await logout(history);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   const navs = () => {
     return [
       {
@@ -101,7 +128,7 @@ function MeScreen({ history, match }) {
       },
       {
         text: "Logout",
-        onClick: () => logout(history),
+        onClick: () => handleLogout(),
       },
     ];
   };

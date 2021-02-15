@@ -13,7 +13,6 @@ import PrivateRoute from "./components/routes/PrivateRoute";
 import PublicRoute from "./components/routes/PublicRoute";
 import Navbar from "./components/other/Navbar";
 import axios from "axios";
-import { getToken, isStillAuthenticated } from "./api/auth";
 import MeScreen from "./components/screens/MeScreen";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -33,16 +32,19 @@ function App({ history, location }) {
     return response;
   };
   const axiosError = (error) => {
-    if (error.response) toast.error(error.response.data.error, toastConfig);
-    else toast.error("Network error", toastConfig);
+    if (error.response) {
+      if (error.response.status === 401) {
+        localStorage.removeItem("meId");
+        history.push("/login");
+      }
+      toast.error(error.response.data.error, toastConfig);
+    } else toast.error("Network error", toastConfig);
 
     return Promise.reject(error);
   };
 
-  axios.defaults.headers.common["x-auth-token"] = getToken();
+  axios.defaults.withCredentials = true;
   axios.interceptors.response.use(axiosSuccess, axiosError);
-
-  useEffect(() => isStillAuthenticated(history));
 
   useEffect(() => {
     if (location && location.state) {

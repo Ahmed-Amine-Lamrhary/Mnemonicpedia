@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { getMe } from "../../api/me";
+import { getMyId } from "../../api/me";
 import { getMnemonics, likeMnemonic } from "../../api/mnemonic";
 import Button from "./Button";
 import Mnemonic from "./Mnemonic";
@@ -57,7 +57,7 @@ function Mnemonics({ query }) {
     setFilter(newFilter);
   };
 
-  const user = getMe();
+  const userId = getMyId();
 
   useEffect(() => {
     if ("search" in filter) {
@@ -87,11 +87,11 @@ function Mnemonics({ query }) {
     let newMnemonics = [...mnemonics];
     let mnemonicLikes = newMnemonics.find((m) => m._id === _id).likes;
 
-    if (!mnemonicLikes.includes(user._id)) mnemonicLikes.push(user._id);
+    if (!mnemonicLikes.includes(userId)) mnemonicLikes.push(userId);
     else
       newMnemonics.find((m) => m._id === _id).likes = newMnemonics
         .find((m) => m._id === _id)
-        .likes.filter((l) => l !== user._id);
+        .likes.filter((l) => l !== userId);
 
     setMnemonics(newMnemonics);
 

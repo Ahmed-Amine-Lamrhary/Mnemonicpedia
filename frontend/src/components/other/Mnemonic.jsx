@@ -1,15 +1,15 @@
 import React from "react";
 import generateUrl from "generate-url";
 import { Link } from "react-router-dom";
-import { getMe } from "../../api/me";
+import { getMyId } from "../../api/me";
 import Button from "./Button";
 import "../../assets/css/mnemonic.css";
 
 function Mnemonic({ mnemonic, onLike }) {
   const { _id, title, content, author, likes } = mnemonic;
+  const userId = getMyId();
 
   if (!_id) return null;
-  const user = getMe();
 
   return (
     <div className="mnemonic">
@@ -26,7 +26,7 @@ function Mnemonic({ mnemonic, onLike }) {
         </div>
 
         <div>
-          {user && user._id === author._id && (
+          {userId === author._id && (
             <Link to={`/edit/${_id}`} className="mnemonic-icon">
               <i className="ri-pencil-line"></i>
             </Link>
@@ -46,9 +46,9 @@ function Mnemonic({ mnemonic, onLike }) {
 
       <div className="helpful">
         Helpful?
-        {user && (
+        {userId && (
           <Button
-            bgColor={likes.includes(user._id) ? "primary" : "white"}
+            bgColor={likes.includes(userId) ? "primary" : "white"}
             onClick={() => onLike(mnemonic._id)}
             className="mnemonic-btn"
           >
@@ -56,7 +56,7 @@ function Mnemonic({ mnemonic, onLike }) {
             <span>{likes.length}</span>
           </Button>
         )}
-        {!user && (
+        {!userId && (
           <Button bgColor="white" className="mnemonic-btn" to="/login">
             <i className="ri-thumb-up-line"></i>
             <span>{likes.length}</span>
