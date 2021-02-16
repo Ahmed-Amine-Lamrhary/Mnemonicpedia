@@ -39,7 +39,7 @@ const register = async (
     state: {
       message: {
         type: "success",
-        value: `You are registered succussfully ${user.fullname}. Please login.`,
+        value: `An activation email has been sent to : ${user.email}. Please check your inbox.`,
       },
     },
   });

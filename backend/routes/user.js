@@ -9,7 +9,7 @@ router.get("/", async (req, res) =>
 );
 
 router.get("/:id", async (req, res) =>
-  getItem(User, req, res, {}, "-password")
+  getItem(User, req, res, { activated: true }, "-password")
 );
 
 module.exports = router;

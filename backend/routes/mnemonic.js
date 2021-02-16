@@ -7,8 +7,6 @@ const User = require("../models/User");
 const Category = require("../models/Category");
 const { mnemonicSchema, validateData } = require("../config/validation");
 
-const { getAll, getItem } = require("../middlewares/crud");
-
 router.get("/", async (req, res) => {
   let query = { isPublished: true };
 
@@ -18,35 +16,57 @@ router.get("/", async (req, res) => {
   let skip = 0;
   if (page > 1) skip = (page - 1) * limit;
 
-  if (author && ObjectId.isValid(author)) {
-    try {
+  try {
+    if (author && ObjectId.isValid(author)) {
       const user = await User.findById(author);
       if (user) query.author = author;
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ error: error.message });
     }
+
+    if (search) query.$text = { $search: search };
+
+    await Mnemonic.find(query)
+      .populate({ path: "author", select: "-password" })
+      .skip(skip)
+      .limit(limit)
+      .exec((error, allMnemonics) => {
+        if (error) throw new Error(error);
+        const mnemonics = allMnemonics.filter(
+          (mnemonic) => mnemonic.author.activated
+        );
+        res.json(mnemonics);
+      });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: error.message });
   }
-
-  if (search) query.$text = { $search: search };
-
-  // get mnemonics
-  getAll(
-    Mnemonic,
-    { query, select: "", skip, limit, sort: "-dateCreated" },
-    res,
-    [
-      { RModel: User, field: "author", rselect: "-password" },
-      { RModel: Category, field: "categories" },
-    ]
-  );
 });
 
 router.get("/:id", async (req, res) => {
-  getItem(Mnemonic, req, res, { isPublished: true }, "", [
-    { RModel: User, field: "author", rselect: "-password" },
-    { RModel: Category, field: "categories" },
-  ]);
+  const { id } = req.params;
+
+  // check if id is valid
+  if (!ObjectId.isValid(id))
+    return res.status(400).json({ error: "Id is not valid" });
+
+  // check if mnemonic exists
+  try {
+    await Mnemonic.findOne({
+      _id: id,
+      isPublished: true,
+    })
+      .populate({ path: "author", select: "-password" })
+      .exec((error, mnemonic) => {
+        if (error) throw new Error(error);
+
+        if (!mnemonic || !mnemonic.author.activated)
+          return res.status(404).json({ error: "Mnemonic does not exist" });
+
+        res.json(mnemonic);
+      });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: error.message });
+  }
 });
 
 router.post("/", auth, async (req, res) => {

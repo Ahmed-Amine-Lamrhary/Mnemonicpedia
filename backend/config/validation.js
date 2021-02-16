@@ -11,16 +11,16 @@ const categorySchema = Joi.object({
 });
 
 const registerSchema = Joi.object({
-  fullname: Joi.string().min(3).max(10).required(),
-  username: Joi.string().min(3).max(10).required(),
+  fullname: Joi.string().min(3).max(30).required(),
+  username: Joi.string().min(3).max(30).required(),
   email: Joi.string().email().required(),
   password: Joi.string().pattern(new RegExp("^[a-zA-Z0-9]{3,30}$")).required(),
   password2: Joi.ref("password"),
 });
 
 const updateMeSchema = Joi.object({
-  fullname: Joi.string().allow("").min(3).max(10),
-  username: Joi.string().allow("").min(3).max(10),
+  fullname: Joi.string().allow("").min(3).max(30),
+  username: Joi.string().allow("").min(3).max(30),
   email: Joi.string().allow("").email(),
   password: Joi.string().allow("").pattern(new RegExp("^[a-zA-Z0-9]{3,30}$")),
   password2: Joi.ref("password"),

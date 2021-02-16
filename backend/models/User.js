@@ -22,6 +22,10 @@ const schema = new mongoose.Schema({
     required: true,
     default: Date.now,
   },
+  activated: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 const User = new mongoose.model("user", schema);

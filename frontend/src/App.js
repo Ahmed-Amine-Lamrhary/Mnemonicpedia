@@ -13,6 +13,7 @@ import PrivateRoute from "./components/routes/PrivateRoute";
 import PublicRoute from "./components/routes/PublicRoute";
 import Navbar from "./components/other/Navbar";
 import axios from "axios";
+import { isStillAuthenticated } from "./api/auth";
 import MeScreen from "./components/screens/MeScreen";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";

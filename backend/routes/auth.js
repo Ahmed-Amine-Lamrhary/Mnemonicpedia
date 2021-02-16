@@ -1,8 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const bcrypt = require("bcrypt");
-const { createToken } = require("../config/jwt");
-const auth = require("../middlewares/auth");
+const { createToken, cookieOptions, expires } = require("../config/jwt");
 const User = require("../models/User");
 const {
   authSchema,
@@ -10,14 +9,18 @@ const {
   validateData,
 } = require("../config/validation");
 
-const cookieOptions = {
-  httpOnly: true,
-  secure: false,
-};
+const sendEmail = require("../config/email");
 
 // LOGIN
 router.post("/login", async (req, res) => {
   const { email, password, keepLogin } = req.body;
+  let cookieOptionsClone = cookieOptions;
+
+  if (!keepLogin)
+    cookieOptionsClone = {
+      ...cookieOptions,
+      expires: new Date(Date.now() + expires),
+    };
 
   // validation
   validateData(req, res, authSchema);
@@ -34,10 +37,10 @@ router.post("/login", async (req, res) => {
     if (!passwordValid) return res.status(404).json({ error: message });
 
     // create token
-    const token = createToken(user, keepLogin);
+    const token = createToken(user);
 
     // send in token httponly cookie
-    res.cookie("token", token, cookieOptions).json({ meId: user._id });
+    res.cookie("token", token, cookieOptionsClone).json({ meId: user._id });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: error.message });
@@ -53,7 +56,8 @@ router.post("/logout", (req, res) => {
 router.post("/register", async (req, res) => {
   const { fullname, username, email, password } = req.body;
 
-  validateData(req, res, registerSchema);
+  const { error } = registerSchema.validate(req.body);
+  if (error) return res.status(400).json({ error: error.details[0].message });
 
   try {
     // check if user already exists
@@ -70,6 +74,10 @@ router.post("/register", async (req, res) => {
     const newUser = await new User({ fullname, username, email, password });
     newUser.password = await encryptPassword(password);
     await newUser.save();
+
+    // send activation email
+    await sendEmail(email, "This is test", "register", { name: fullname });
+
     res.json({
       user: {
         fullname,

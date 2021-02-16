@@ -1,9 +1,15 @@
 const jwt = require("jsonwebtoken");
 
 const secretKey = "jwt-secret-key";
-const expiresIn = "2h";
 
-const createToken = (user, keepLogin) => {
+const expires = 7200000; // in 2h
+
+const cookieOptions = {
+  httpOnly: true,
+  secure: false,
+};
+
+const createToken = (user) => {
   return jwt.sign(
     {
       _id: user._id,
@@ -11,12 +17,13 @@ const createToken = (user, keepLogin) => {
       username: user.username,
       email: user.email,
     },
-    secretKey,
-    !keepLogin ? { expiresIn } : null
+    secretKey
   );
 };
 
 module.exports = {
   secretKey,
   createToken,
+  cookieOptions,
+  expires,
 };
