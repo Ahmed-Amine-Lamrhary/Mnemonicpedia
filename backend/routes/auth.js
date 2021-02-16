@@ -3,6 +3,7 @@ const router = express.Router();
 const bcrypt = require("bcrypt");
 const { createToken, cookieOptions, expires } = require("../config/jwt");
 const User = require("../models/User");
+const Registered = require("../models/Registered");
 const {
   authSchema,
   registerSchema,
@@ -32,6 +33,9 @@ router.post("/login", async (req, res) => {
     const message = "Email or Password doesn't exist";
 
     if (!user) return res.status(404).json({ error: message });
+
+    // is user activated
+    if (!user.activated) return res.status(200).json({ activated: false });
 
     const passwordValid = await bcrypt.compare(password, user.password);
     if (!passwordValid) return res.status(404).json({ error: message });
@@ -70,19 +74,65 @@ router.post("/register", async (req, res) => {
         .status(400)
         .json({ error: "Username or email already exists" });
 
+    /////////// start transaction
     // register
     const newUser = await new User({ fullname, username, email, password });
     newUser.password = await encryptPassword(password);
-    await newUser.save();
+    const { email: userEmail } = await newUser.save();
+
+    // add to registered collection
+    const secretNumber = "12345";
+    const registered = await new Registered({ email: userEmail, secretNumber });
+    await registered.save();
 
     // send activation email
-    await sendEmail(email, "This is test", "register", { name: fullname });
+    await sendEmail(email, "This is test", "register", {
+      name: fullname,
+      secretNumber,
+    });
+    /////////// end transaction
 
     res.json({
       user: {
         fullname,
         email,
         username,
+      },
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// ACTIVATE EMAIL
+router.post("/activate", async (req, res) => {
+  const { email, secretNumber } = req.body;
+
+  // validate data
+
+  try {
+    // is user in registered and user collections
+    const registeredUser = await Registered.findOne({ email });
+    const user = await User.findOne({ email });
+
+    if (!registeredUser || !user)
+      return res.status(400).json({ error: "User doesn't exist" });
+
+    // compare secret number
+    if (registeredUser.secretNumber !== secretNumber)
+      return res.status(400).json({ error: "Secret number is invalid" });
+
+    // activate user and remove it from registered collection
+    user.activated = true;
+    await Registered.deleteOne({ email: registeredUser.email });
+    await user.save();
+
+    res.json({
+      user: {
+        fullname: user.fullname,
+        email: user.email,
+        username: user.username,
       },
     });
   } catch (error) {

@@ -5,18 +5,32 @@ const resource = "auth";
 
 const login = async ({ email, password, keepLogin }, history, prevLocation) => {
   const {
-    data: { meId },
+    data: { activated, meId },
   } = await axios.post(`${config.api}/auth/login`, {
     email,
     password,
     keepLogin,
   });
 
+  if (activated === false) return false;
+
   localStorage.setItem("meId", meId);
 
   // redirect to dashboard
   if (!prevLocation) return history.replace("/");
   history.replace(prevLocation.pathname);
+};
+
+const activate = async ({ email, secretNumber }) => {
+  const {
+    data: { user },
+  } = await axios.post(`${config.api}/auth/activate`, {
+    email,
+    secretNumber,
+  });
+
+  // redirect to login
+  if (user) window.location.reload();
 };
 
 const register = async (
@@ -57,4 +71,4 @@ const logout = async (history, message) => {
   });
 };
 
-export { login, register, logout };
+export { login, activate, register, logout };

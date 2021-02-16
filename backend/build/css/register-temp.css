@@ -14,7 +14,7 @@
 .text-center {
   text-align: center;
 }
-.confirm-email button {
+.confirm-email .btn {
   background-color: #0052e2;
   color: white;
   box-shadow: none;
