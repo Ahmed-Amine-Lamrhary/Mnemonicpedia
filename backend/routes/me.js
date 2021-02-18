@@ -3,7 +3,7 @@ const router = express.Router();
 const User = require("../models/User");
 const auth = require("../middlewares/auth");
 const { createToken } = require("../config/jwt");
-const { updateMeSchema, validateData } = require("../config/validation");
+const { updateMeSchema } = require("../config/validation");
 
 router.get("/", auth, async (req, res) => {
   const { _id: userId } = req.user;
@@ -20,7 +20,8 @@ router.get("/", auth, async (req, res) => {
 router.put("/", auth, async (req, res) => {
   const { fullname, username, email, password } = req.body;
 
-  validateData(req, res, updateMeSchema);
+  const { error } = updateMeSchema.validate(req.body);
+  if (error) return res.status(400).json({ error: error.details[0].message });
 
   try {
     if (!fullname && !username && !email && !password)

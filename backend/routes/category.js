@@ -3,7 +3,7 @@ const Category = require("../models/Category");
 const auth = require("../middlewares/auth");
 const router = express.Router();
 const ObjectId = require("mongoose").Types.ObjectId;
-const { categorySchema, validateData } = require("../config/validation");
+const { categorySchema } = require("../config/validation");
 
 const { getAll } = require("../middlewares/crud");
 
@@ -29,7 +29,9 @@ router.get("/", async (req, res) => {
 
 router.post("/", auth, async (req, res) => {
   const name = req.body.name.toLowerCase();
-  validateData(req, res, categorySchema);
+
+  const { error } = categorySchema.validate(req.body);
+  if (error) return res.status(400).json({ error: error.details[0].message });
 
   try {
     const category = await Category.findOne({ name });
@@ -49,7 +51,8 @@ router.put("/:id", auth, async (req, res) => {
   const name = req.body.name.toLowerCase();
   const { id: categoryId } = req.params;
 
-  validateData(req, res, categorySchema);
+  const { error } = categorySchema.validate(req.body);
+  if (error) return res.status(400).json({ error: error.details[0].message });
 
   // id is valid
   if (!ObjectId.isValid(categoryId))

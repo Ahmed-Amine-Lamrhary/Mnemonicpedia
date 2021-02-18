@@ -3,6 +3,7 @@ const { secretKey } = require("../config/jwt");
 
 module.exports = (req, res, next) => {
   const token = req.cookies.token;
+  // const token = req.headers["x-auth-token"];
 
   try {
     const user = jwt.verify(token, secretKey);

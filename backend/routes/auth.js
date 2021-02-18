@@ -4,13 +4,10 @@ const bcrypt = require("bcrypt");
 const { createToken, cookieOptions, expires } = require("../config/jwt");
 const User = require("../models/User");
 const Registered = require("../models/Registered");
-const {
-  authSchema,
-  registerSchema,
-  validateData,
-} = require("../config/validation");
+const { authSchema, registerSchema } = require("../config/validation");
 
 const sendEmail = require("../config/email");
+const { assert } = require("joi");
 
 // LOGIN
 router.post("/login", async (req, res) => {
@@ -24,7 +21,8 @@ router.post("/login", async (req, res) => {
     };
 
   // validation
-  validateData(req, res, authSchema);
+  const { error } = authSchema.validate(req.body);
+  if (error) return res.status(400).json({ error: error.details[0].message });
 
   // check if email and password are valid
   let user;
@@ -63,6 +61,9 @@ router.post("/register", async (req, res) => {
   const { error } = registerSchema.validate(req.body);
   if (error) return res.status(400).json({ error: error.details[0].message });
 
+  const session = await User.startSession();
+  session.startTransaction();
+
   try {
     // check if user already exists
     const user = await User.findOne({
@@ -74,23 +75,26 @@ router.post("/register", async (req, res) => {
         .status(400)
         .json({ error: "Username or email already exists" });
 
-    /////////// start transaction
+    ///////////////////////////// start transaction
     // register
     const newUser = await new User({ fullname, username, email, password });
     newUser.password = await encryptPassword(password);
-    const { email: userEmail } = await newUser.save();
+    const { email: userEmail } = await newUser.save({ session });
 
     // add to registered collection
-    const secretNumber = "12345";
+    const randomNumber = generateRandomNumber();
+    const secretNumber = await encryptPassword(randomNumber);
     const registered = await new Registered({ email: userEmail, secretNumber });
-    await registered.save();
+    await registered.save({ session });
 
     // send activation email
     await sendEmail(email, "This is test", "register", {
       name: fullname,
-      secretNumber,
+      secretNumber: randomNumber,
     });
-    /////////// end transaction
+
+    await session.commitTransaction();
+    ///////////////////////////// end transaction
 
     res.json({
       user: {
@@ -100,8 +104,11 @@ router.post("/register", async (req, res) => {
       },
     });
   } catch (error) {
+    await session.abortTransaction();
     console.error(error);
     res.status(500).json({ error: error.message });
+  } finally {
+    session.endSession();
   }
 });
 
@@ -120,7 +127,11 @@ router.post("/activate", async (req, res) => {
       return res.status(400).json({ error: "User doesn't exist" });
 
     // compare secret number
-    if (registeredUser.secretNumber !== secretNumber)
+    const secretNumberValid = await bcrypt.compare(
+      secretNumber,
+      registeredUser.secretNumber
+    );
+    if (!secretNumberValid)
       return res.status(400).json({ error: "Secret number is invalid" });
 
     // activate user and remove it from registered collection
@@ -144,6 +155,15 @@ router.post("/activate", async (req, res) => {
 const encryptPassword = async (password) => {
   const salt = await bcrypt.genSalt(10);
   return await bcrypt.hash(password, salt);
+};
+
+const generateRandomNumber = () => {
+  let number = [];
+  while (number.length < 6) {
+    const r = Math.floor(Math.random() * 9) + 1;
+    if (number.indexOf(r) === -1) number.push(r);
+  }
+  return number.join("");
 };
 
 module.exports = router;

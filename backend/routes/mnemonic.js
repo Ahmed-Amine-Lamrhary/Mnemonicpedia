@@ -5,7 +5,7 @@ const router = express.Router();
 const ObjectId = require("mongoose").Types.ObjectId;
 const User = require("../models/User");
 const Category = require("../models/Category");
-const { mnemonicSchema, validateData } = require("../config/validation");
+const { mnemonicSchema } = require("../config/validation");
 
 router.get("/", async (req, res) => {
   let query = { isPublished: true };
@@ -70,8 +70,12 @@ router.get("/:id", async (req, res) => {
 });
 
 router.post("/", auth, async (req, res) => {
-  validateData(req, res, mnemonicSchema);
-  const categories = validateCategories(req, res);
+  const { error } = mnemonicSchema.validate(req.body);
+  if (error) return res.status(400).json({ error: error.details[0].message });
+
+  const categories = await validateCategories(req.body.categories);
+  if (!categories)
+    return res.status(400).json({ error: "Categories are not valid" });
 
   try {
     req.body = {
@@ -94,8 +98,12 @@ router.put("/:id", auth, async (req, res) => {
   const { title, content } = req.body;
   const { id: mnemonicId } = req.params;
 
-  validateData(req, res, mnemonicSchema);
-  const categories = validateCategories(req, res);
+  const { error } = mnemonicSchema.validate(req.body);
+  if (error) return res.status(400).json({ error: error.details[0].message });
+
+  const categories = await validateCategories(req.body.categories);
+  if (!categories)
+    return res.status(400).json({ error: "Categories are not valid" });
 
   // id is valid
   if (!ObjectId.isValid(mnemonicId))
@@ -189,8 +197,7 @@ router.put("/like/:id", auth, async (req, res) => {
 });
 
 // validate if cateogories exist and not duplicated
-const validateCategories = (req, res) => {
-  const { categories } = req.body;
+const validateCategories = async (categories) => {
   const cateogriesList = [];
 
   // get only not duplicated
@@ -199,23 +206,18 @@ const validateCategories = (req, res) => {
       cateogriesList.push(categoryId);
   });
 
-  // validate if categories IDs are valid
-  cateogriesList.map((categoryId) => {
-    if (!ObjectId.isValid(categoryId))
-      return res.status(400).json({ error: "Categories are not valid" });
-  });
-
   // validate if categories exist
-  // cateogriesList.map(async (categoryId) => {
-  //   try {
-  //     const category = await Category.findById(categoryId);
-  //     if (!category)
-  //       return res.status(400).json({ error: "Categories do not exist" });
-  //   } catch (error) {
-  //     console.error(error);
-  //     return res.status(500).json({ error: error.message });
-  //   }
-  // });
+  for (let i = 0; i < cateogriesList.length; i++) {
+    const categoryId = cateogriesList[i];
+    if (!ObjectId.isValid(categoryId)) return false;
+
+    try {
+      const category = await Category.findById(categoryId);
+      if (!category) return false;
+    } catch (error) {
+      throw new Error(error);
+    }
+  }
 
   return cateogriesList;
 };

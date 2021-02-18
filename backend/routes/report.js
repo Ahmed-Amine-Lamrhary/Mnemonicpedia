@@ -3,7 +3,7 @@ const router = express.Router();
 const ReportMnemonic = require("../models/ReportMnemonic");
 const ReportUser = require("../models/ReportUser");
 const auth = require("../middlewares/auth");
-const { reportUserSchema, validateData } = require("../config/validation");
+const { reportUserSchema } = require("../config/validation");
 
 router.post("/mnemonic/:id", auth, async (req, res) => {
   const { title, content } = req.body;
@@ -11,7 +11,8 @@ router.post("/mnemonic/:id", auth, async (req, res) => {
   const { _id: userId } = req.user;
 
   // validate data
-  validateData(req, res, reportMnemonicSchema);
+  const { error } = reportMnemonicSchema.validate(req.body);
+  if (error) return res.status(400).json({ error: error.details[0].message });
 
   // is id valid
   if (!ObjectId.isValid(mnemonicId))
@@ -48,7 +49,7 @@ router.post("/user/:id", auth, async (req, res) => {
   const { _id: userId } = req.user;
 
   // validate data
-  validateData(req, res, reportUserSchema);
+  const { error } = reportUserSchema.validate(req.body);
 
   // is id valid
   if (!ObjectId.isValid(reportedUserId))
