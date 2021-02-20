@@ -18,6 +18,11 @@ const registerSchema = Joi.object({
   password2: Joi.ref("password"),
 });
 
+const activateSchema = Joi.object({
+  email: Joi.string().email().required(),
+  secretNumber: Joi.string().required(),
+});
+
 const updateMeSchema = Joi.object({
   fullname: Joi.string().allow("").min(3).max(30),
   username: Joi.string().allow("").min(3).max(30),
@@ -46,6 +51,7 @@ module.exports = {
   authSchema,
   categorySchema,
   registerSchema,
+  activateSchema,
   updateMeSchema,
   mnemonicSchema,
   reportMnemonicSchema,

@@ -21,7 +21,7 @@ const login = async ({ email, password, keepLogin }, history, prevLocation) => {
   history.replace(prevLocation.pathname);
 };
 
-const activate = async ({ email, secretNumber }) => {
+const activate = async ({ email, secretNumber }, history) => {
   const {
     data: { user },
   } = await axios.post(`${config.api}/auth/activate`, {
@@ -30,7 +30,17 @@ const activate = async ({ email, secretNumber }) => {
   });
 
   // redirect to login
-  if (user) window.location.reload();
+  if (user) {
+    history.push({
+      pathname: "/login",
+      state: {
+        message: {
+          type: "success",
+          value: "Your account has been activated. Please login",
+        },
+      },
+    });
+  }
 };
 
 const register = async (

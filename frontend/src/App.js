@@ -3,6 +3,7 @@ import { Switch, Route, Redirect, withRouter } from "react-router-dom";
 import User from "./components/screens/UserScreen";
 import Home from "./components/screens/HomeScreen";
 import Login from "./components/screens/LoginScreen";
+import ActivateAccount from "./components/screens/ActivateAccount";
 import Register from "./components/screens/RegisterScreen";
 import MnemonicScreen from "./components/screens/MnemonicScreen";
 import NotFound from "./components/screens/NotFoundScreen";
@@ -13,7 +14,6 @@ import PrivateRoute from "./components/routes/PrivateRoute";
 import PublicRoute from "./components/routes/PublicRoute";
 import Navbar from "./components/other/Navbar";
 import axios from "axios";
-import { isStillAuthenticated } from "./api/auth";
 import MeScreen from "./components/screens/MeScreen";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -62,6 +62,7 @@ function App({ history, location }) {
       <div className="content">
         <Switch>
           <PublicRoute path="/login" component={Login} />
+          <PublicRoute path="/activate" component={ActivateAccount} />
           <PublicRoute path="/register" component={Register} />
           <PrivateRoute path="/me" component={MeScreen} />
           <Route path="/user/:id" component={User} />

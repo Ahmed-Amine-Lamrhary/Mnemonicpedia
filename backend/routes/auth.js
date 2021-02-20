@@ -4,10 +4,13 @@ const bcrypt = require("bcrypt");
 const { createToken, cookieOptions, expires } = require("../config/jwt");
 const User = require("../models/User");
 const Registered = require("../models/Registered");
-const { authSchema, registerSchema } = require("../config/validation");
+const {
+  authSchema,
+  registerSchema,
+  activateSchema,
+} = require("../config/validation");
 
 const sendEmail = require("../config/email");
-const { assert } = require("joi");
 
 // LOGIN
 router.post("/login", async (req, res) => {
@@ -32,11 +35,11 @@ router.post("/login", async (req, res) => {
 
     if (!user) return res.status(404).json({ error: message });
 
-    // is user activated
-    if (!user.activated) return res.status(200).json({ activated: false });
-
     const passwordValid = await bcrypt.compare(password, user.password);
     if (!passwordValid) return res.status(404).json({ error: message });
+
+    // is user activated
+    if (!user.activated) return res.status(200).json({ activated: false });
 
     // create token
     const token = createToken(user);
@@ -75,7 +78,6 @@ router.post("/register", async (req, res) => {
         .status(400)
         .json({ error: "Username or email already exists" });
 
-    ///////////////////////////// start transaction
     // register
     const newUser = await new User({ fullname, username, email, password });
     newUser.password = await encryptPassword(password);
@@ -94,7 +96,6 @@ router.post("/register", async (req, res) => {
     });
 
     await session.commitTransaction();
-    ///////////////////////////// end transaction
 
     res.json({
       user: {
@@ -117,11 +118,16 @@ router.post("/activate", async (req, res) => {
   const { email, secretNumber } = req.body;
 
   // validate data
+  const { error } = activateSchema.validate(req.body);
+  if (error) return res.status(400).json({ error: error.details[0].message });
+
+  const session = await User.startSession();
+  session.startTransaction();
 
   try {
     // is user in registered and user collections
-    const registeredUser = await Registered.findOne({ email });
-    const user = await User.findOne({ email });
+    const registeredUser = await Registered.findOne({ email }).session(session);
+    const user = await User.findOne({ email }).session(session);
 
     if (!registeredUser || !user)
       return res.status(400).json({ error: "User doesn't exist" });
@@ -136,8 +142,12 @@ router.post("/activate", async (req, res) => {
 
     // activate user and remove it from registered collection
     user.activated = true;
-    await Registered.deleteOne({ email: registeredUser.email });
-    await user.save();
+    await Registered.deleteOne({ email: registeredUser.email }).session(
+      session
+    );
+    await user.save({ session });
+
+    await session.commitTransaction();
 
     res.json({
       user: {
@@ -147,8 +157,11 @@ router.post("/activate", async (req, res) => {
       },
     });
   } catch (error) {
+    await session.abortTransaction();
     console.error(error);
     res.status(500).json({ error: error.message });
+  } finally {
+    session.endSession();
   }
 });
 

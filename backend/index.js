@@ -22,8 +22,11 @@ app.use("/mnemonic", mnemonic);
 app.use("/category", category);
 app.use("/report", report);
 
+const uri =
+  "mongodb+srv://amine123:samirisamiri@cluster.zb5o8.mongodb.net/ourapp?retryWrites=true&w=majority";
+
 mongoose
-  .connect("mongodb://localhost/ourapp")
+  .connect(uri, { useNewUrlParser: true, useUnifiedTopology: true })
   .then(() => console.log("Connected to database"))
   .catch((error) => console.error(error));
 

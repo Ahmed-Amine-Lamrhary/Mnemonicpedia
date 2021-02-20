@@ -35,7 +35,7 @@ const schema = mongoose.Schema({
   },
 });
 
-schema.index({ content: "text" });
+// schema.index({ content: "text" });
 
 const Mnemonic = new mongoose.model("mnemonic", schema);
 
