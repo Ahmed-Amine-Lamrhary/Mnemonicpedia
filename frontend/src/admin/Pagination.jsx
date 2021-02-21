@@ -1,17 +1,26 @@
 import React from "react";
 import { Link } from "react-router-dom";
 
-function Pagination(props) {
+function Pagination({ numPages, selected, changePage }) {
+  const renderOptions = () => {
+    let options = [];
+
+    for (let i = 1; i < numPages + 1; i++) {
+      options.push(
+        <option selected={selected === i} value={i}>
+          Page {i}
+        </option>
+      );
+    }
+
+    return options;
+  };
+
   return (
     <div class="pagination-block">
       <form>
-        <select>
-          <option selected value="1">
-            1
-          </option>
-          <option value="2">2</option>
-          <option value="3">3</option>
-          <option value="4">4</option>
+        <select onChange={(e) => changePage(e.target.value)}>
+          {renderOptions()}
         </select>
       </form>
 

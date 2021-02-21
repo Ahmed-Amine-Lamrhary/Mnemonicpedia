@@ -26,6 +26,10 @@ const schema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
+  suspended: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 const User = new mongoose.model("user", schema);

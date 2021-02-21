@@ -182,7 +182,6 @@ router.put("/like/:id", auth, async (req, res) => {
       return res.status(400).json({ error: "Mnemonic does not exist" });
 
     // if mnemonic exists
-
     if (!mnemonic.likes.includes(userId)) mnemonic.likes.push(userId);
     else mnemonic.likes = mnemonic.likes.filter((like) => like !== userId);
 
