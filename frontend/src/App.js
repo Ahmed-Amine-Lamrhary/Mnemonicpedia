@@ -17,6 +17,8 @@ import axios from "axios";
 import MeScreen from "./components/screens/MeScreen";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import Adminlogin from "./admin/Adminlogin";
+import Dashboard from "./admin/Dashboard";
 
 function App({ history, location }) {
   const toastConfig = {
@@ -58,9 +60,12 @@ function App({ history, location }) {
     <>
       <ToastContainer />
 
-      <Navbar />
-      <div className="content">
+      {/* <Navbar /> */}
+
+      <div className="contents">
         <Switch>
+          <PublicRoute path="/admin" component={Dashboard} />
+
           <PublicRoute path="/login" component={Login} />
           <PublicRoute path="/activate" component={ActivateAccount} />
           <PublicRoute path="/register" component={Register} />
